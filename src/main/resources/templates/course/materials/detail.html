@@ -1,0 +1,16 @@
+
+<div class="container mt-5">
+    <h2>Course Material Details</h2>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h4 class="card-title" th:text="${courseMaterial.title}"></h4>
+            <p class="card-text">Material ID: <span th:text="${courseMaterial.materialId}"></span></p>
+            <p class="card-text">Material Type: <span th:text="${courseMaterial.materialType}"></span></p>
+            <p class="card-text">Expected Duration: <span th:text="${courseMaterial.expectDuration}"></span></p>
+            <p class="card-text">Word Count: <span th:text="${courseMaterial.wordCount}"></span></p>
+            <a class="btn btn-secondary" href="/course-materials">Back to list</a>
+        </div>
+    </div>
+</div>
+

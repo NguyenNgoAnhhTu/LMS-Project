@@ -1,0 +1,76 @@
+<body>
+<div class="container mt-5">
+  <div class="text-center">
+    <h1 class="fw-bold ">Quiz 1 Answers</h1>
+  </div>
+  <div class="my-5 px-3">
+    <p class="mb-1"><strong>Username:</strong> Abc</p>
+    <p class="mb-1"><strong>Marks:</strong> 29/30</p>
+    <p class="mb-1"><strong>Grade:</strong> <span class="text-primary">9.67</span></p>
+  </div>
+
+  <h4>Question 1</h4>
+  <div class="card p-4 mt-3">
+
+    <pre class=" bg- p-3 border rounded" style="background-color: #F0F0F0">1+2 = ?</pre>
+
+    <ul class="list-unstyled">
+      <li><input type="radio" disabled=""> 2</li>
+      <li><input type="radio" disabled=""> None of these</li>
+      <li><input type="radio" disabled="" checked=""> 1 <span class="text-danger">x</span></li>
+      <li><input type="radio" disabled=""> 8</li>
+      <li><input type="radio" disabled="" class="text-success"> 3 <span class="text-success">✓</span></li>
+    </ul>
+  </div>
+
+
+  <h4 class="mt-5">Question 2</h4>
+  <div class="card p-4 mt-3">
+
+
+    <pre class="p-3 border rounded" style="background-color: #F0F0F0">1+2 = ?</pre>
+
+    <ul class="list-unstyled">
+      <li><input type="radio" disabled=""> 2</li>
+      <li><input type="radio" disabled=""> None of these</li>
+      <li><input type="radio" disabled="" checked=""> 1 <span class="text-danger">x</span></li>
+      <li><input type="radio" disabled=""> 8</li>
+      <li><input type="radio" disabled="" class="text-success"> 3 <span class="text-success">✓</span></li>
+    </ul>
+  </div>
+
+
+
+</div><!-- Pagination -->
+<div class="row justify-content-center mt-3 py-2">
+  <div class="pagination col-4 justify-content-center pe-0" th:if="${totalPages > 0}">
+    <ul class="pagination">
+      <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+        <a class="page-link" th:href="@{/quizes(page=${0}, pageSize=${pageSize}, searchQuery=${searchQuery})}">&lt;&lt;&lt;</a>
+      </li>
+
+      <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+        <a class="page-link" th:href="@{/quizes(page=${currentPage - 1}, pageSize=${pageSize}, searchQuery=${searchQuery})}">&lt;&lt;</a>
+      </li>
+
+      <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPage == i} ? 'active'">
+        <a class="page-link" th:href="@{/quizes(page=${i}, pageSize=${pageSize}, searchQuery=${searchQuery})}" th:text="${i + 1}"></a>
+      </li>
+
+      <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+        <a class="page-link" th:href="@{/quizes(page=${currentPage + 1}, pageSize=${pageSize}, searchQuery=${searchQuery})}">&gt;&gt;</a>
+      </li>
+
+      <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+        <a class="page-link" th:href="@{/quizes(page=${totalPages - 1}, pageSize=${pageSize}, searchQuery=${searchQuery})}">&gt;&gt;&gt;</a>
+      </li>
+    </ul>
+  </div>
+</div>
+<div class="d-flex justify-content-center mb-4">
+  <button class="btn btn-primary">Back to the course</button>
+</div>
+
+</body>
+
+

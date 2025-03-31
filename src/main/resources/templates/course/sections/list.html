@@ -1,0 +1,89 @@
+<h3>Sections</h3>
+
+<!-- Form for adding a new section -->
+<!--<form id="add-section-form" class="d-flex align-items-center gap-2">-->
+<!--    <input type="hidden" name="courseId" value="{{course.id}}">-->
+<!--    <input type="text" name="sectionName" id="sectionName" class="form-control w80" placeholder="Enter a section name" style="width: 80%;" required />-->
+<!--    <button type="button" class="btn btn-primary" onclick="addSection()"> <i class="bi bi-plus-circle"></i> Add </button>-->
+<!--</form>-->
+
+<form id="add-section-form" class="d-flex align-items-center gap-2">
+
+    <input type="text" name="sectionName" id="sectionName" class="form-control w80" placeholder="Enter a section name" style="width: 80%;" required />
+    <button type="button" class="btn btn-primary" onclick="addSection()">
+        <i class="bi bi-plus-circle"></i> Add
+    </button>
+</form>
+
+
+<!-- List of sections -->
+<div class="scrollable-table">
+    <table class="table table-bordered">
+        <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+        <tr>
+            <th class="text-center">#</th>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Loop through the sections and display them -->
+        <tr th:each="section, iterStat : ${sections}">
+            <td class="text-center" th:text="${iterStat.index + 1}"></td> <!-- Display the index -->
+            <td th:text="${section.name}"></td> <!-- Display section name -->
+            <td>
+                <!-- Edit button -->
+                <button
+                        class="btn btn-outline-warning btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#updateSectionModal"
+                        th:data-section-id="${section.id}"
+                        th:data-section-name="${section.name}"
+                        title="Edit"
+                        onclick="editSection(this)"
+                >
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <!-- Delete button -->
+                <button
+                        class="btn btn-outline-danger btn-sm ms-2"
+                        onclick="deleteSection([[${section.id}]])"
+                        title="Delete"
+                >
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<!-- If no sections available -->
+<div th:if="${#lists.isEmpty(sections)}" class="alert alert-info">
+    <p>No sections available for this course.</p>
+</div>
+
+<!-- Modal for updating a section -->
+<div class="modal fade" id="updateSectionModal" tabindex="-1" aria-labelledby="updateSectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateSectionModalLabel">Update Section</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="update-section-form" method="POST" action="/sections/update">
+                    <input type="hidden" name="courseId" th:value="${course.id}">
+                    <input type="hidden" name="sectionId" id="update-section-id">
+                    <input type="text" name="sectionName" id="update-section-name" class="form-control" placeholder="New Section Name" required />
+                    <button type="submit" class="btn btn-success mt-2">Update Section</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+<div class="alert alert-warning" role="alert">
+    Note: You can't delete sessions that have materials.
+</div>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments :: common_header('Modules', '/style.css')}"></head>
+
+<body>
+<div class="d-flex flex-column min-vh-100">
+    <!-- Header -->
+    <header th:replace="~{fragments :: header}"></header>
+
+    <!--&lt;!&ndash; Sidebar &ndash;&gt;-->
+    <!--<aside th:replace="fragments/sidebar :: sidebar"></aside>-->
+
+    <!-- Main Content -->
+    <main th:replace="~{${content}}"></main>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments :: footer}"></footer>
+</div>
+<script th:replace="~{fragments :: scripts}"></script>
+
+</body>
+</html>

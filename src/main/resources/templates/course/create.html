@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments :: common_header(~{::title}, ~{::link})}">
+    <title>Create Course</title>
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="/styles.css">  <!-- Your custom styles -->
+</head>
+
+<body>
+<!-- Wrapper for the whole page -->
+<div class="d-flex flex-column min-vh-100">
+    <!-- Sticky Header -->
+    <div th:replace="~{fragments :: header}" class="sticky-top"></div> <!-- Header always on top -->
+
+    <!-- Body Content -->
+    <div class="flex-grow-1 container mt-5">
+        <!-- Card for Form -->
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0">Create Course</h3>
+            </div>
+            <div class="card-body">
+                <!-- Display success or error message -->
+                <div th:if="${error}" class="alert alert-danger">
+                    <span th:text="${error}"></span>
+                </div>
+                <div th:if="${success}" class="alert alert-success">
+                    <span th:text="${success}"></span>
+                </div>
+                <form th:action="@{/courses/create}" th:object="${course}" method="post" class="needs-validation" novalidate>
+                    <!-- Course Name Field -->
+                    <div class="mb-3">
+                        <label for="courseName" class="form-label">Course Name</label>
+                        <input type="text" id="courseName" th:field="*{name}" class="form-control" placeholder="Enter course name" required>
+                        <div class="invalid-feedback">
+                            Course name is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Code Field -->
+                    <div class="mb-3">
+                        <label for="courseCode" class="form-label">Course Code</label>
+                        <input type="text" id="courseCode" th:field="*{code}" class="form-control" placeholder="Enter course code" required>
+                        <div class="invalid-feedback">
+                            Course code is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Description Field -->
+                    <div class="mb-3">
+                        <label for="courseDescription" class="form-label">Course Description</label>
+                        <textarea id="courseDescription" th:field="*{description}" class="form-control" placeholder="Enter course description" rows="4" required></textarea>
+                        <div class="invalid-feedback">
+                            Course description is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Duration Field -->
+                    <div class="mb-3">
+                        <label for="courseDuration" class="form-label">Course Duration (Weeks)</label>
+                        <input type="number" id="courseDuration" th:field="*{durationInWeeks}" class="form-control" placeholder="Enter course duration in weeks" required>
+                        <div class="invalid-feedback">
+                            Course duration is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Language Field -->
+                    <div class="mb-3">
+                        <label for="courseLanguage" class="form-label">Course Language</label>
+                        <input type="text" id="courseLanguage" th:field="*{language}" class="form-control" placeholder="Enter course language" required>
+                        <div class="invalid-feedback">
+                            Course language is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Level Field -->
+                    <div class="mb-3">
+                        <label for="courseLevel" class="form-label">Course Level</label>
+                        <input type="text" id="courseLevel" th:field="*{level}" class="form-control" placeholder="Enter course level (e.g., Beginner, Intermediate, Advanced)" required>
+                        <div class="invalid-feedback">
+                            Course level is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Price Field -->
+                    <div class="mb-3">
+                        <label for="coursePrice" class="form-label">Course Price</label>
+                        <input type="number" id="coursePrice" th:field="*{price}" class="form-control" placeholder="Enter course price" required>
+                        <div class="invalid-feedback">
+                            Course price is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Discount Field -->
+                    <div class="mb-3">
+                        <label for="courseDiscount" class="form-label">Course Discount (%)</label>
+                        <input type="number" id="courseDiscount" th:field="*{discount}" class="form-control" placeholder="Enter discount percentage" required>
+                        <div class="invalid-feedback">
+                            Discount percentage is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Creator Field (Dropdown) -->
+                    <input type="hidden" th:value="${currentUser.id}" th:field="*{creator}">
+
+                    <!-- Course Instructor Field (Dropdown) -->
+                    <div class="mb-3">
+                        <label for="courseInstructor" class="form-label">Course Instructor</label>
+                        <select id="courseInstructor" th:field="*{instructor}" class="form-select" required>
+                            <option value="" selected>Select Instructor</option>
+                            <option th:each="user : ${instructors}" th:value="${user.id}" th:text="${user.username}"></option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Course instructor is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Published Field -->
+                    <div class="mb-3">
+                        <label for="coursePublished" class="form-label">Published</label>
+                        <input type="checkbox" id="coursePublished" th:field="*{published}" class="form-check-input">
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <a href="#" th:href="@{/courses}" class="btn btn-secondary ms-2">Back to List</a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments :: footer}" class="mt-auto"></div> <!-- Footer stays at the bottom -->
+</div>
+
+<!-- Bootstrap 5 JS Bundle (Includes Popper.js) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom Scripts for Form Validation -->
+<script>
+    // Enable Bootstrap validation styles
+    (function () {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
+
+</body>
+</html>

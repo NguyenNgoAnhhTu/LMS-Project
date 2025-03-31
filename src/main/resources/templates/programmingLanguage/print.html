@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programming Languages</title>
+    <link rel="stylesheet" href="/css/print.css">
+</head>
+<body>
+<h1>Programming Language List</h1>
+<table>
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Programming Language </th>
+
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Loop through programmingLanguages and display them -->
+    <tr th:each="programmingLanguage, iterStat : ${programmingLanguages}">
+        <td class="text-center" th:text="${iterStat.index + 1}"></td> <!-- Start numbering from 1 -->
+        <td th:text="${programmingLanguage.language}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    // Automatically trigger the browser's print dialog
+    window.onload = function() {
+        window.print();
+    };
+</script>
+</body>
+</html>

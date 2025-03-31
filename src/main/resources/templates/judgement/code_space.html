@@ -1,0 +1,591 @@
+<!--<!DOCTYPE html>-->
+<!--<html xmlns:th="http://www.thymeleaf.org">-->
+<!--<head>-->
+<!--  <meta charset="UTF-8">-->
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1">-->
+<!--  <title>Exercises</title>-->
+<!--  &lt;!&ndash; Bootstrap CSS &ndash;&gt;-->
+<!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">-->
+<!--  &lt;!&ndash; Bootstrap Icons &ndash;&gt;-->
+<!--  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">-->
+<!--  &lt;!&ndash; CodeMirror CSS &ndash;&gt;-->
+<!--  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">-->
+<!--  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">-->
+<!--  &lt;!&ndash; CodeMirror JS &ndash;&gt;-->
+<!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>-->
+<!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/clike/clike.min.js"></script>-->
+<!--  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>-->
+<!--  &lt;!&ndash; Additional CodeMirror modes for other languages can be added if needed &ndash;&gt;-->
+<!--  <style>-->
+<!--    /* Custom CSS for the page */-->
+<!--    body {-->
+<!--      background-color: #1e1e1e;-->
+<!--      color: #fff;-->
+<!--      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;-->
+<!--      min-height: 100vh;-->
+<!--    }-->
+<!--    .editor-container,-->
+<!--    .result-container,-->
+<!--    .sidebar-container {-->
+<!--      background-color: #282c34;-->
+<!--      padding: 15px;-->
+<!--      border-radius: 8px;-->
+<!--      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);-->
+<!--      height: 100%;-->
+<!--      display: flex;-->
+<!--      flex-direction: column;-->
+<!--    }-->
+<!--    .sidebar-container { background-color: #343a40; }-->
+<!--    .result-container {-->
+<!--      background-color: #2c313a;-->
+<!--      padding: 15px;-->
+<!--      overflow-y: auto;-->
+<!--      display: flex;-->
+<!--      flex-direction: column;-->
+<!--    }-->
+<!--    .CodeMirror {-->
+<!--      flex: 1;-->
+<!--      height: auto;-->
+<!--      font-size: 16px;-->
+<!--      border-radius: 5px;-->
+<!--    }-->
+<!--    .test-case-pass { color: #28a745; font-weight: bold; }-->
+<!--    .test-case-fail { color: #dc3545; font-weight: bold; }-->
+<!--    @media (max-width: 992px) {-->
+<!--      .sidebar-container,-->
+<!--      .editor-container,-->
+<!--      .result-container { margin-top: 20px; }-->
+<!--    }-->
+<!--    .result-container::-webkit-scrollbar { width: 8px; }-->
+<!--    .result-container::-webkit-scrollbar-track { background: #2c313a; }-->
+<!--    .result-container::-webkit-scrollbar-thumb {-->
+<!--      background-color: #4e555e;-->
+<!--      border-radius: 4px;-->
+<!--    }-->
+<!--    .equal-height-row { display: flex; flex-wrap: nowrap; height: 100%; }-->
+<!--    .equal-height-col { display: flex; flex-direction: column; }-->
+<!--    @media (max-width: 767.98px) { .equal-height-row { flex-direction: column; } }-->
+<!--    .full-height { min-height: calc(100vh - 80px); }-->
+<!--  </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--&lt;!&ndash; Navbar &ndash;&gt;-->
+<!--<nav class="navbar navbar-expand-lg navbar-dark bg-dark">-->
+<!--  <div class="container-fluid">-->
+<!--    <a class="navbar-brand" href="#">Code Exercises</a>-->
+<!--    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"-->
+<!--            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">-->
+<!--      <span class="navbar-toggler-icon"></span>-->
+<!--    </button>-->
+<!--  </div>-->
+<!--</nav>-->
+
+<!--&lt;!&ndash; Main Content &ndash;&gt;-->
+<!--<div class="container my-4 full-height">-->
+<!--  &lt;!&ndash; Header (can be replaced with a fragment) &ndash;&gt;-->
+<!--  <div th:replace="~{fragments :: header}" class="sticky-top"></div>-->
+
+<!--  <h2 class="text-center mb-4">Exercise</h2>-->
+<!--  <div class="row equal-height-row">-->
+<!--    &lt;!&ndash; Sidebar: Exercise Information &ndash;&gt;-->
+<!--    <div class="col-lg-3 col-md-4 mb-4 equal-height-col">-->
+<!--      <div class="sidebar-container h-100">-->
+<!--        <span class="badge bg-success mb-2" th:text="${exercise.level}">EASY</span>-->
+<!--        <h4 th:text="${exercise.name}">Exercise Title</h4>-->
+<!--        <p th:text="${exercise.description}">Description of the exercise</p>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--    &lt;!&ndash; Code Editor Section &ndash;&gt;-->
+<!--    <div class="col-lg-6 col-md-8 mb-4 equal-height-col">-->
+<!--      <div class="editor-container h-100">-->
+<!--        <form th:action="@{/judgement/run-code}" method="post" class="d-flex flex-column h-100">-->
+<!--          &lt;!&ndash; Pass the exercise ID &ndash;&gt;-->
+<!--          <input type="hidden" name="exerciseId" th:value="${exercise.id}" />-->
+<!--          &lt;!&ndash; Pass the exercise language &ndash;&gt;-->
+<!--          <input type="hidden" name="language" th:value="${exercise.language.language}" />-->
+<!--          <div class="d-flex justify-content-between align-items-center mb-3">-->
+<!--            <div class="d-flex align-items-center">-->
+<!--              <i class="bi bi-code-slash me-2 fs-4"></i>-->
+<!--              &lt;!&ndash; Display the exercise language &ndash;&gt;-->
+<!--              <span class="badge bg-primary fs-6" th:text="${exercise.language.language}"></span>-->
+<!--            </div>-->
+<!--            <button class="btn btn-success btn-sm d-flex align-items-center" type="submit">-->
+<!--              <i class="bi bi-play-fill me-1"></i> Run Code-->
+<!--            </button>-->
+<!--          </div>-->
+<!--          &lt;!&ndash; Code input field &ndash;&gt;-->
+<!--          <textarea name="code" id="codeEditor" th:utext="${code}" class="form-control flex-grow-1"></textarea>-->
+<!--        </form>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--    &lt;!&ndash; Results Section &ndash;&gt;-->
+<!--    <div class="col-lg-3 col-md-12 equal-height-col mb-4">-->
+<!--      <div class="result-container h-100">-->
+<!--        <h5 class="mb-3">Results:</h5>-->
+<!--        &lt;!&ndash; Display test results if available &ndash;&gt;-->
+<!--        <div th:if="${passed != null}">-->
+<!--          <p>You passed <strong th:text="${passed}">0</strong> out of <strong th:text="${total}">0</strong> test cases.</p>-->
+<!--          <ul class="list-unstyled">-->
+<!--            <li th:each="testResult, iterStat : ${testResults}" class="mb-2">-->
+<!--              <span th:text="'Test Case ' + (${iterStat.index} + 1) + ':'"></span>-->
+<!--              <span th:text="${testResult.isCorrect ? 'Passed' : 'Failed'}"-->
+<!--                    th:classappend="${testResult.isCorrect} ? 'test-case-pass' : 'test-case-fail'"></span>-->
+<!--              <div th:if="${!testResult.isCorrect}" class="mt-1 ps-3">-->
+<!--                <strong>Input:</strong> <span th:text="${testResult.testCase.input}"></span><br>-->
+<!--                <strong>Your Output:</strong>-->
+<!--                <pre th:text="${testResult.userOutput}" class="bg-dark p-2 rounded"></pre>-->
+<!--                <strong>Expected Output:</strong> <span th:text="${testResult.testCase.expectedOutput}"></span>-->
+<!--              </div>-->
+<!--            </li>-->
+<!--          </ul>-->
+<!--        </div>-->
+<!--        &lt;!&ndash; Display generic output if code hasn't been run yet &ndash;&gt;-->
+<!--        <div th:unless="${passed != null}">-->
+<!--          <pre class="bg-dark p-2 rounded" th:text="${output}">Click "Run Code" to execute...</pre>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+
+<!--  &lt;!&ndash; Footer &ndash;&gt;-->
+<!--  <div th:replace="~{fragments :: footer}" class="mt-auto"></div>-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Bootstrap JS and dependencies &ndash;&gt;-->
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>-->
+
+<!--&lt;!&ndash; Initialize CodeMirror and configure mode based on the exercise language &ndash;&gt;-->
+<!--<script th:inline="javascript">-->
+<!--  // When the page loads, initialize CodeMirror for the textarea-->
+<!--  window.onload = function () {-->
+<!--    var codeTextarea = document.getElementById("codeEditor");-->
+<!--    // Retrieve the exercise language and convert it to lowercase-->
+<!--    var language = (/*[[${exercise.language.language}]]*/ 'Java').toLowerCase();-->
+
+<!--    // Define an object mapping language names to CodeMirror modes-->
+<!--    var languageModes = {-->
+<!--      "python": "python",-->
+<!--      "c++": "text/x-c++src",-->
+<!--      "cpp": "text/x-c++src",-->
+<!--      "java": "text/x-java",-->
+<!--      "javascript": "javascript",-->
+<!--      "ruby": "ruby",-->
+<!--      "php": "php",-->
+<!--      "go": "go",-->
+<!--      "swift": "swift",-->
+<!--      "c#": "text/x-csharp"-->
+<!--      // Add more languages if needed-->
+<!--    };-->
+
+<!--    // Get the corresponding mode; fallback to "text/plain" if not found-->
+<!--    var languageMode = languageModes[language] || "text/plain";-->
+
+<!--    // Create the CodeMirror editor with the selected configuration-->
+<!--    var editor = CodeMirror.fromTextArea(codeTextarea, {-->
+<!--      mode: languageMode,-->
+<!--      theme: "dracula",-->
+<!--      lineNumbers: true,-->
+<!--      indentUnit: 4,-->
+<!--      tabSize: 4,-->
+<!--      matchBrackets: true,-->
+<!--      autoCloseBrackets: true-->
+<!--    });-->
+
+<!--    // Set the editor size to occupy 100% of its container-->
+<!--    editor.setSize("100%", "100%");-->
+
+<!--    // Before form submission, save the content from CodeMirror into the textarea-->
+<!--    document.querySelector("form").addEventListener("submit", function () {-->
+<!--      editor.save();-->
+<!--    });-->
+
+<!--    // Refresh the editor size after 100ms-->
+<!--    setTimeout(function () {-->
+<!--      editor.refresh();-->
+<!--    }, 100);-->
+<!--  };-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Exercises</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- CodeMirror (Editor UI) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .editor-container,
+        .result-container,
+        .sidebar-container,
+        .custom-input-container {
+            background-color: #282c34;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-container {
+            background-color: #343a40;
+        }
+
+        .result-container {
+            background-color: #2c313a;
+            padding: 15px;
+            overflow-y: auto;
+            max-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .custom-input-container {
+            background-color: #343a40;
+            margin-top: 20px;
+            padding: 20px;
+        }
+
+        .CodeMirror {
+            flex: 1;
+            height: auto; /* Let Flexbox handle the height */
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        .test-case-pass {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .test-case-fail {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .sidebar-container,
+            .editor-container,
+            .result-container {
+                margin-top: 20px;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .equal-height-row {
+                flex-direction: column;
+            }
+        }
+
+        /* Scrollbar styling for result container */
+        .result-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .result-container::-webkit-scrollbar-track {
+            background: #2c313a;
+        }
+
+        .result-container::-webkit-scrollbar-thumb {
+            background-color: #4e555e;
+            border-radius: 4px;
+        }
+
+        /* Ensure equal heights using Flexbox */
+        .equal-height-row {
+            display: flex;
+            flex-wrap: nowrap; /* Prevent wrapping to maintain equal heights */
+            height: 100%;
+        }
+
+        .equal-height-col {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Full height for container */
+        .full-height {
+            min-height: calc(100vh - 80px); /* Adjust based on navbar height */
+        }
+
+        #customInput::placeholder {
+            color: white;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Code Exercises</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <!-- Add more navigation items here if needed -->
+    </div>
+</nav>
+
+<div class="container my-4 full-height">
+    <!-- Header (can be replaced with a fragment) -->
+    <div th:replace="~{fragments :: header}" class="sticky-top"></div>
+
+    <h2 class="text-center mb-4">Exercise</h2>
+    <div class="row equal-height-row">
+        <!-- Sidebar (Exercise Info) -->
+        <div class="col-lg-3 col-md-4 mb-4 equal-height-col">
+            <div class="sidebar-container h-100">
+                <span class="badge bg-success mb-2" th:text="${exercise.level}">Easy</span>
+                <h4 th:text="${exercise.name}">Exercise Title</h4>
+                <p th:text="${exercise.description}">Description of the exercise</p>
+            </div>
+        </div>
+        <!-- Code Editor -->
+        <div class="col-lg-6 col-md-8 mb-4 equal-height-col">
+            <div class="editor-container h-100">
+                <form th:action="@{/judgement/run-code}" method="post" class="d-flex flex-column h-100">
+                    <!-- Pass the exercise ID -->
+                    <input type="hidden" name="exerciseId" th:value="${exercise.id}"/>
+                    <!-- Pass the exercise language -->
+                    <input type="hidden" name="language" th:value="${exercise.language.language}"/>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-code-slash me-2 fs-4"></i>
+                            <!-- Display the exercise language -->
+                            <span class="badge bg-primary fs-6" th:text="${exercise.language.language}"></span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <!-- Nút "Review Code" -->
+                            <button id="reviewButton" class="btn btn-secondary btn-sm d-flex align-items-center" type="button">
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" style="display: none;"></span>
+                                Review Code
+                            </button>
+                            <!-- Nút "Run Code" -->
+                            <button class="btn btn-success btn-sm d-flex align-items-center" type="submit">
+                                <i class="bi bi-play-fill me-1"></i> Run Code
+                            </button>
+                        </div>
+                    </div>
+                    <textarea name="code" id="codeEditor" th:utext="${code}"
+                              class="form-control flex-grow-1"></textarea>
+                </form>
+            </div>
+        </div>
+        <!-- Results -->
+        <div class="col-lg-3 col-md-12 equal-height-col mb-4">
+            <div class="result-container h-100">
+                <h5 class="mb-3">Results:</h5>
+                <!-- Display grading results if available -->
+                <div th:if="${passed != null}">
+                    <p>You passed <strong th:text="${passed}">0</strong> out of <strong th:text="${total}">0</strong>
+                        test cases.</p>
+                    <ul class="list-unstyled">
+                        <li th:each="testResult, iterStat : ${testResults}" class="mb-2">
+                            <span th:text="'Test Case ' + (${iterStat.index} + 1) + ':'"></span>
+                            <span th:text="${testResult.isCorrect ? 'Passed' : 'Failed'}"
+                                  th:classappend="${testResult.isCorrect} ? 'test-case-pass' : 'test-case-fail'"></span>
+                            <div th:if="${!testResult.isCorrect}" class="mt-1 ps-3">
+                                <strong>Input:</strong> <span th:text="${testResult.testCase.input}"></span><br>
+                                <strong>Your Output:</strong>
+                                <pre th:text="${testResult.userOutput}" class="bg-dark p-2 rounded"></pre>
+                                <strong>Expected Output:</strong> <span
+                                    th:text="${testResult.testCase.expectedOutput}"></span>
+                            </div>
+                        </li>
+                    </ul>
+
+                </div>
+                <!-- Display AI Review if available -->
+                <div th:if="${aiReview != null}">
+                    <h5 class="mb-3">AI Review:</h5>
+                    <pre class="bg-dark p-2 rounded" th:text="${aiReview}">AI feedback will appear here...</pre>
+                </div>
+                <!-- Display generic output if no grading or review -->
+                <div th:unless="${passed != null or aiReview != null}">
+                    <pre class="bg-dark p-2 rounded" th:text="${output}">Click "Run Code" or "Review Code" to execute...</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Input Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="custom-input-container">
+                <h5 class="mb-3">Custom Input</h5>
+                <form action="/judgement/run-custom-code" method="post" class="d-flex flex-column">
+                    <input type="hidden" name="exerciseId" th:value="${exercise.id}">
+                    <input type="hidden" name="language" th:value="${language}">
+                    <input type="hidden" name="code" th:value="${code}">
+
+                    <div class="mb-3">
+                        <label for="customInput" class="form-label">Input:</label>
+                        <textarea name="customInput" id="customInput" class="form-control text-white bg-dark" rows="4"
+                                  placeholder="Enter your custom input here..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="bi bi-play-fill me-1"></i> Run with Custom Input
+                        </button>
+                    </div>
+                    <div class="mb-3">
+                        <label for="customOutput" class="form-label">Output:</label>
+                        <pre id="customOutput" class="bg-dark p-2 rounded" th:utext="${customOutput}">Your output will appear here...</pre>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:inline="javascript">
+    // Initialize CodeMirror when the page loads
+    window.onload = function () {
+        var codeTextarea = document.getElementById("codeEditor");
+        // Retrieve the exercise language and convert it to lowercase
+        var language = (/*[[${exercise.language.language}]]*/ 'Java').toLowerCase();
+
+        // Define an object mapping language names to CodeMirror modes
+        var languageModes = {
+            "python": "python",
+            "c++": "text/x-c++src",
+            "cpp": "text/x-c++src",
+            "java": "text/x-java",
+            "javascript": "javascript",
+            "ruby": "ruby",
+            "php": "php",
+            "go": "go",
+            "swift": "swift",
+            "c#": "text/x-csharp"
+            // Add more languages if needed
+        };
+
+        // Get the corresponding mode; fallback to "text/plain" if not found
+        var languageMode = languageModes[language] || "text/plain";
+
+
+        var editor = CodeMirror.fromTextArea(codeTextarea, {
+            mode: languageMode,
+            theme: "dracula",
+            lineNumbers: true,
+            indentUnit: 4,
+            tabSize: 4,
+            matchBrackets: true,
+            autoCloseBrackets: true
+        });
+
+        // Let CodeMirror take full height
+        editor.setSize("100%", "100%");
+
+        // Save content before form submission
+        document.querySelector("form").addEventListener("submit", function () {
+            editor.save(); // Update textarea with CodeMirror content
+        });
+
+        // Refresh editor size after slight delay
+        setTimeout(() => {
+            editor.refresh(); // Maintain correct size on reload
+        }, 100);
+        // Handle "Review" button click
+        document.getElementById("reviewButton").addEventListener("click", function () {
+            var button = this;
+            var spinner = button.querySelector('.spinner-border');
+
+            // Hiển thị spinner
+            spinner.style.display = 'inline-block';
+            // Get the current code from CodeMirror
+            var code = editor.getValue();
+
+            // Prepare the payload
+            var payload = {
+                exerciseId: /*[[${exercise.id}]]*/, // Numeric value
+                language: language,
+                code: code
+            };
+
+            // Disable the button to prevent multiple clicks
+            button.disabled = true;
+            button.innerHTML = '<i class="bi bi-chat-left-text-fill me-1"></i> Reviewing...';
+
+            // Get CSRF Token (nếu bạn đang sử dụng Spring Security)
+            // var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            // Send the code to the server via Fetch API
+            fetch('/judgement/review-code', { // Đảm bảo endpoint này tồn tại trên backend
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken // CSRF Token
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Re-enable the button
+                    button.disabled = false;
+                    button.innerHTML = '<i class="bi bi-chat-left-text-fill me-1"></i> Review Code';
+
+                    if (data.error) {
+                        // Hiển thị lỗi trong container kết quả thay vì sử dụng alert
+                        var resultContainer = document.querySelector('.result-container');
+                        resultContainer.innerHTML = `
+                            <h5 class="mb-3">AI Review:</h5>
+                            <pre class="bg-dark p-2 rounded text-danger">${data.error}</pre>
+                        `;
+                        return;
+                    }
+
+                    // Hiển thị phản hồi AI trong container kết quả
+                    var resultContainer = document.querySelector('.result-container');
+                    resultContainer.innerHTML = `
+                        <h5 class="mb-3">AI Review:</h5>
+                        <pre class="bg-dark p-2 rounded">${data.review}</pre>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Hiển thị lỗi trong container kết quả thay vì sử dụng alert
+                    var resultContainer = document.querySelector('.result-container');
+                    resultContainer.innerHTML = `
+                        <h5 class="mb-3">AI Review:</h5>
+                        <pre class="bg-dark p-2 rounded text-danger">An error occurred while fetching the AI review.</pre>
+                    `;
+
+                    // Re-enable the button
+                    button.disabled = false;
+                    button.innerHTML = '<i class="bi bi-chat-left-text-fill me-1"></i> Review Code';
+                });
+        });
+
+    };
+</script>
+</body>
+
+</html>

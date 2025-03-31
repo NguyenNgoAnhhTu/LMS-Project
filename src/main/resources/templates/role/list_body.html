@@ -1,0 +1,169 @@
+<!-- Content Section -->
+<div class="px-5" th:fragment="content">
+    <h1 class="text-center">Roles</h1>
+
+    <!-- Import/Export buttons -->
+    <div class="d-flex align-items-center mb-3">
+        <div class="flex-fill">
+            <!-- Search Form -->
+            <form action="/roles" method="get" class="d-flex w-50">
+                <!-- Correctly bind the searchQuery model attribute using Thymeleaf -->
+                <input type="text" class="form-control me-2" name="searchQuery" th:value="${searchQuery}"
+                       placeholder="Search by role name" aria-label="Search">
+                <button class="btn btn-outline-secondary me-2" type="submit">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
+        </div>
+        <div>
+            <!-- Import Button that triggers modal -->
+            <button class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#importModal">
+                <i class="bi bi-upload"></i> Import
+            </button>
+
+            <!-- Export Button -->
+            <a href="/roles/export" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-file-earmark-excel"></i> Export
+            </a>
+
+            <a href="/roles/print" class="btn btn-outline-secondary me-2" target="_blank">
+                <i class="bi bi-printer"></i> Print Roles
+            </a>
+
+            <!-- Add New Role Button -->
+            <a href="/roles/create" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Add New Role
+            </a>
+
+        </div>
+    </div>
+
+    <div id="message" class="mt-3">
+        <!-- Error message -->
+        <div th:if="${error}" class="alert alert-danger text-center" th:text="${error}" id="errorMessage"></div>
+        <!-- Success message -->
+        <div th:if="${success}" class="alert alert-success text-center" th:text="${success}" id="successMessage"></div>
+    </div>
+    <script>
+        // Hide messages after 3 seconds with a fade-out effect
+        setTimeout(function() {
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            if (successMessage) {
+                successMessage.style.transition = 'opacity 1s';
+                successMessage.style.opacity = '0';
+                setTimeout(() => successMessage.style.display = 'none', 1000);
+            }
+            if (errorMessage) {
+                errorMessage.style.transition = 'opacity 1s';
+                errorMessage.style.opacity = '0';
+                setTimeout(() => errorMessage.style.display = 'none', 1000);
+            }
+        }, 2000);
+    </script>
+    <!-- Displaying roles -->
+    <div class="scrollable-table">
+        <table class="table table-bordered">
+            <thead style="position: sticky; top: 0; z-index: 1;">
+            <tr>
+                <th class="text-center">#</th>
+                <th>Role Name</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="role, iterStat : ${rolesPage.content}">
+                <!-- Adjust index based on current page and page size -->
+                <td class="text-center" th:text="${iterStat.index + 1}"></td> <!-- Start from 1 -->
+                <td th:text="${role.name}"></td>
+                <td>
+                    <a href="#" th:href="@{/roles/edit/{id}(id=${role.id})}" class="btn btn-outline-secondary btn-sm"
+                       title="Edit">
+                        <i class="bi bi-pencil text-secondary"></i>
+                    </a>
+
+                    <!-- Delete Button with icon -->
+                    <a th:href="@{/roles/delete/{id}(id=${role.id})}" title="Delete"
+                       class="btn btn-outline-secondary btn-sm"
+                       onclick="return confirm('Are you sure you want to delete this role?')">
+                        <i class="bi bi-trash"></i>
+                    </a>
+
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination controls -->
+        <div class="d-flex justify-content-center">
+            <ul class="pagination">
+                <!-- Show "No Data" when there are no elements -->
+                <li class="page-item disabled" th:if="${rolesPage.totalElements == 0}">
+                    <span class="page-link">No Data</span>
+                </li>
+
+                <!-- Display pagination controls only when there is data -->
+                <th:block th:if="${rolesPage.totalElements > 0}">
+                    <!-- First Page -->
+                    <li class="page-item" th:if="${rolesPage.number > 0}">
+                        <a class="page-link" th:href="@{'?page=0'}">First</a>
+                    </li>
+
+                    <!-- Previous Page -->
+                    <li class="page-item" th:if="${rolesPage.number > 0}">
+                        <a class="page-link" th:href="@{'?page=' + ${rolesPage.number - 1}}">Previous</a>
+                    </li>
+
+                    <!-- Loop through and display page numbers -->
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, rolesPage.totalPages - 1)}"
+                        th:classappend="${i == rolesPage.number} ? ' active' : ''">
+                        <a class="page-link" th:href="@{'?page=' + ${i}}"
+                           th:text="${i + 1}">1</a> <!-- Display page numbers (1-indexed) -->
+                    </li>
+
+                    <!-- Next Page -->
+                    <li class="page-item" th:if="${rolesPage.number < rolesPage.totalPages - 1}">
+                        <a class="page-link" th:href="@{'?page=' + ${rolesPage.number + 1}}">Next</a>
+                    </li>
+
+                    <!-- Last Page -->
+                    <li class="page-item" th:if="${rolesPage.number < rolesPage.totalPages - 1}">
+                        <a class="page-link" th:href="@{'?page=' + ${rolesPage.totalPages - 1}}">Last</a>
+                    </li>
+                </th:block>
+            </ul>
+        </div>
+
+
+        <!-- Modal for Import -->
+        <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="importModalLabel">Import Roles from Excel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Information about the template -->
+                        <div class="mb-3">
+                            <p>Download the Excel template before uploading your file:</p>
+                            <a href="/templates/roles.xlsx" class="btn btn-link" download>Download Role Template</a>
+                        </div>
+                        <!-- Import form -->
+                        <form method="post" enctype="multipart/form-data" action="/roles/import">
+                            <div class="mb-3">
+                                <label for="file" class="form-label">Choose Excel File</label>
+                                <input type="file" name="file" id="file" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Import</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+

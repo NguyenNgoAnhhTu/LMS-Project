@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Modules</title>
+    <link rel="stylesheet" href="/css/print.css">
+</head>
+<body>
+<h1>Module List</h1>
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th class="text-center">#</th>
+        <th>Name</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Loop through moduleGroups and display them -->
+    <tr th:each="module, iterStat : ${modules}">
+        <td class="text-center" th:text="${iterStat.index + 1}"></td> <!-- Start numbering from 1 -->
+        <td th:text="${module.name}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    // Automatically trigger the browser's print dialog
+    window.onload = function() {
+        window.print();
+    };
+</script>
+</body>
+</html>

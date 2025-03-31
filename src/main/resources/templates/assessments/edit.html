@@ -1,0 +1,272 @@
+<div class="container mt-4">
+    <h2 class="text-center mb-4" th:text="${assessment != null} ? 'Edit Assessment' : 'Create New Assessment'"></h2>
+
+    <form th:action="@{/assessments/save}" method="POST" id="assessment-form">
+
+        <!-- Assessment Details Section -->
+        <div class="card mb-4 shadow">
+            <div class="card-header bg-primary text-white">
+                <h4>Assessment Details</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="assessmentType" class="form-label">Assessment Type</label>
+                        <input type="text" id="assessmentType" name="assessmentType" th:value="${assessment?.assessmentType}" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" id="title" name="title" th:value="${assessment?.title}" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="course" class="form-label">Course</label>
+                        <input type="text" id="course" name="course" th:value="${assessment?.course}" class="form-control">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exercises/Questions/Settings Section -->
+        <div class="card mb-4 shadow">
+            <div class="card-header bg-secondary text-white">
+                <h4>Exercises/Questions/Settings</h4>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="exercises-tab" data-bs-toggle="tab" data-bs-target="#exercises" type="button" role="tab" aria-controls="exercises" aria-selected="true">Exercises</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="questions-tab" data-bs-toggle="tab" data-bs-target="#questions" type="button" role="tab" aria-controls="questions" aria-selected="false">Questions</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false">Settings</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content mt-3" id="myTabContent">
+                    <!-- Exercises Tab -->
+                    <div class="tab-pane fade show active p-3" id="exercises" role="tabpanel" aria-labelledby="exercises-tab">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3 d-flex align-items-center">
+                                    <div style="max-width: 80px; margin-right: 10px;">
+                                        <select name="language" id="id_language" class="form-select">
+                                            <option value="">All</option>
+                                            <!-- Iterate over languages -->
+                                            <th:block th:each="language : ${languages}">
+                                                <option th:value="${language.language}"
+                                                        th:text="${#strings.capitalize(language.language)}"
+                                                        th:selected="${assessment?.language == language.language}">
+                                                </option>
+                                            </th:block>
+                                        </select>
+                                    </div>
+                                    <div class="flex-grow-1 d-flex align-items-center">
+                                        <input type="text" id="search-exercises" class="form-control" placeholder="Search for exercises..." onkeyup="filterExercises()">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="fw-bold text-dark border-bottom pb-1 mb-2">Exercises</h5>
+                                <div id="exercise-list" class="list-group overflow-auto border" style="max-height: 300px;">
+                                    <!-- Iterate over exercises -->
+                                    <th:block th:each="exercise : ${exercises}">
+                                        <div class="list-group-item exercise-item d-flex align-items-center" th:data-exercise-id="${exercise.id}">
+                                            <input class="form-check-input me-2" type="checkbox" name="exercises" th:value="${exercise.id}"
+                                                   th:id="'exercise-' + ${exercise.id}"
+                                                   th:checked="${selectedExercises.contains(exercise.id)}">
+                                            <label class="form-check-label" th:for="'exercise-' + ${exercise.id}" th:text="${exercise.name}"></label>
+                                            <span class="badge rounded-pill bg-light text-dark small ms-auto border border-primary"
+                                                  th:text="${#strings.capitalize(exercise.language)}"></span>
+                                            <button type="button" class="btn btn-link text-secondary view-button ms-2"
+                                                    th:onclick="'toggleViewButton(this, ' + ${exercise.id} + ')'">
+                                                <i class="bi bi-eye-slash"></i>
+                                            </button>
+                                        </div>
+                                    </th:block>
+                                </div>
+                                <div id="filtered-exercises" class="list-group overflow-auto border" style="max-height: 300px; display: none;"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 class="fw-bold text-dark border-bottom pb-1 mb-2">Preview Selected Exercise</h5>
+                                <div id="exercise-content" class="border p-2 overflow-auto" style="max-height: 300px;">
+                                    <p>Select an exercise from the list to preview its content here.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="questions" role="tabpanel" aria-labelledby="questions-tab">
+                        <div class="row">
+                            <!-- Search Bar -->
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text">🔍</span>
+                                        <input type="text" id="search-questions" class="form-control" placeholder="Search for questions..." onkeyup="filterQuestions()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Multiple Choice Library -->
+                            <div class="col-md-5">
+                                <div class="card shadow-sm hover-shadow">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Multiple Choice Library</h5>
+                                    </div>
+                                    <div class="card-body question-library" style="max-height: 400px; overflow-y: auto; scrollbar-width: thin;">
+                                        <div class="accordion" id="quizAccordion">
+                                            <!-- Loop through quizzes dynamically -->
+                                            <th:block th:each="quizOption : ${allQuizzes}">
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" th:id="'heading' + ${quizOption.id}">
+                                                        <div class="quiz-dropdown border rounded p-2 mb-2 bg-light"
+                                                             th:id="'quizDropdown' + ${quizOption.id}" style="cursor: pointer;">
+                                                            <div class="quiz-header d-flex justify-content-between align-items-center border-bottom pb-1 mb-1" style="font-size: 0.8rem;">
+                                                                <div class="position-relative">
+                                                                    <span class="quiz-title h6 fw-bold" style="font-size: 16px; margin-right: 10px;">
+                                                                        <span th:text="${quizOption.name}"></span>
+                    <!--                                                    <span class="badge bg-success" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;" th:text="${quizOption.totalQuestions} + ' questions'"></span>-->
+                                                                    </span>
+
+                                                                    <div class="quiz-info d-flex gap-3" style="font-size: 0.7rem; color: #666;">
+                                                                        <div style="position: absolute; left: 200px; margin-top: 12px; transform: rotate(180deg);">
+                                                                            <svg width="10" height="10" viewBox="0 0 24 24">
+                                                                                <path d="M 12 4 L 20 16 L 4 16 Z" fill="#999999" stroke="#999999" stroke-width="4" stroke-linejoin="round" style="filter: drop-shadow(0 0 3px cyan);"/>
+                                                                            </svg>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <button type="button" class="btn btn-primary d-flex align-items-center justify-content-center position-relative btn-add-question add-questions"
+                                                                        th:data-quiz-id="${quizOption.id}"
+                                                                        style="width: 35px; height: 35px; border-radius: 50%; transition: width 0.3s ease; overflow: hidden;"
+                                                                        onmouseover="this.style.width='70px'; this.style.borderRadius='5px'; this.querySelector('.add-all-text').style.opacity='1'; this.querySelector('.add-all-text').style.transform='translateY(0)'; this.querySelector('.plus-sign').style.opacity='0';"
+                                                                        onmouseout="this.style.width='35px'; this.style.borderRadius='50%'; this.querySelector('.add-all-text').style.opacity='0'; this.querySelector('.add-all-text').style.transform='translateY(-10px)'; this.querySelector('.plus-sign').style.opacity='1';">
+                                                                    <span class="plus-sign" style="font-size: 1.3rem; transition: opacity 0.3s ease;">+</span>
+                                                                    <span class="add-all-text position-absolute" style="opacity: 0; left: 20%; transform: translateX(-50%) translateY(-10px); font-size: 0.8rem; transition: opacity 0.3s ease, transform 0.3s ease;">Add All</span>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </h2>
+                                                    <div th:id="'collapse' + ${quizOption.id}" class="accordion-collapse collapse" th:aria-labelledby="'heading' + ${quizOption.id}" data-bs-parent="#quizAccordion">
+                                                        <div class="accordion-body">
+                                                            <ul class="list-group" style="max-height: 400px; overflow-y: auto; scrollbar-width: thin;">
+                                                                <th:block th:each="question : ${quizOption.questions}">
+                                                                    <li class="list-group-item d-flex align-items-start justify-content-between shadow-sm">
+                                                                        <span class="question-text" th:text="${question.questionText}"></span>
+                                                                        <button class="btn btn-sm btn-primary add-question ms-3 align-self-center" th:data-question-id="${question.id}">+</button>
+                                                                        <div class="answer-options bg-success-subtle d-none">
+                                                                            <th:block th:each="answer : ${question.answerOptions}">
+                                                                                <span class="answer-option" th:data-is-correct="${answer.correct}" th:text="${answer.text}"></span>
+                                                                            </th:block>
+                                                                        </div>
+                                                                    </li>
+                                                                </th:block>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </th:block>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Selected Questions -->
+                            <div class="col-md-7">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Selected Questions</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group" id="selected-questions" style="max-height: 350px; overflow-y: auto;">
+                                            <th:block th:each="selectedQuestion : ${selectedQuestions}">
+                                                <li class="list-group-item d-flex" th:data-question-id="${selectedQuestion.id}">
+                                                    <div class="question-content flex-grow-1">
+                                                        <div class="form-control question-input" th:text="${selectedQuestion.questionText}" readonly></div>
+                                                        <br>
+                                                        <th:block th:each="answer : ${selectedQuestion.answerOptions}">
+                                                            <div class="answer-container d-flex align-items-center mb-3">
+                                                                <input type="checkbox" th:checked="${answer.correct}" disabled>
+                                                                <textarea class="form-control answer-input" th:style="${answer.correct} ? 'background-color: #d9f7d9;' : ''" th:text="${answer.text}" readonly></textarea>
+                                                            </div>
+                                                        </th:block>
+                                                    </div>
+                                                    <div class="actions d-flex flex-column align-items-center ml-2" style="gap: 5px;">
+                                                        <button type="button" class="btn btn-light btn-sm d-flex justify-content-center align-items-center remove-question" th:data-question-id="${selectedQuestion.id}" title="Remove question">
+                                                            <i class="fas fa-trash-alt text-danger" style="font-size: 1.2rem;"></i>
+                                                        </button>
+                                                        <span class="question-number d-flex justify-content-center align-items-center" style="font-size: 0.9rem; width: 30px; height: 30px; border-radius: 50%; background-color: #f8f9fa; color: #6c757d; font-weight: bold;">
+                                        <span th:text="${#lists.indexOf(selectedQuestions, selectedQuestion) + 1}"></span>
+                                    </span>
+                                                    </div>
+                                                    <input type="hidden" name="selected_questions[]" th:value="${selectedQuestion.id}">
+                                                </li>
+                                            </th:block>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Settings Tab -->
+                    <div class="tab-pane fade" id="settings" role="tabpanel" aria-labelledby="settings-tab">
+                        <p>Include settings-related content here.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="text-center">
+            <button type="submit" class="btn btn-success">Save Assessment</button>
+            <a th:href="@{/assessments}" class="btn btn-secondary">Back to List</a>
+            <a th:href="@{/assessments/{id}/preview(id=${assessment.id})}" class="btn btn-secondary mb-3">Preview Assessment</a>
+        </div>
+    </form>
+</div>
+
+<div id="fullscreen-preview" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-white" style="z-index: 1050;">
+    <!-- Content will be dynamically injected here -->
+</div>
+
+<!-- JavaScript for Tab and Preview Handling -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Enable tab switching using Bootstrap's default behavior
+        const tabButtons = document.querySelectorAll('#myTab button[data-bs-toggle="tab"]');
+
+        tabButtons.forEach(tabButton => {
+            tabButton.addEventListener('click', event => {
+                event.preventDefault();
+                const targetTab = tabButton.dataset.bsTarget;
+                const allTabs = document.querySelectorAll('.tab-pane');
+
+                allTabs.forEach(tab => tab.classList.remove('show', 'active'));
+                document.querySelector(targetTab).classList.add('show', 'active');
+            });
+        });
+
+        // Preview Fullscreen Logic
+        const previewButton = document.querySelector("a[th\:href='@{/assessments/{id}/preview(id=${assessment.id})}']");
+        const fullscreenPreview = document.getElementById('fullscreen-preview');
+
+        if (previewButton) {
+            previewButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                fullscreenPreview.classList.remove('d-none');
+                fullscreenPreview.innerHTML = `<iframe src="${previewButton.getAttribute('href')}" class="w-100 h-100 border-0"></iframe>`;
+            });
+
+            fullscreenPreview.addEventListener('click', () => {
+                fullscreenPreview.classList.add('d-none');
+                fullscreenPreview.innerHTML = '';
+            });
+        }
+    });
+</script>

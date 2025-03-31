@@ -1,0 +1,44 @@
+<div class="flex-grow-1 container mt-5">
+    <!-- Card for Form -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Update Module</h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/modules/edit/{id}(id=${module.id})}" th:object="${module}" method="post" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name:</label>
+                    <input type="text" id="name" th:field="*{name}" class="form-control" required />
+                    <div class="invalid-feedback">Please enter a name.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="url" class="form-label">URL:</label>
+                    <input type="text" id="url" th:field="*{url}" class="form-control" required />
+                    <div class="invalid-feedback">Please enter a URL.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="icon" class="form-label">Icon:</label>
+                    <input type="text" id="icon" th:field="*{icon}" class="form-control" required />
+                    <div class="invalid-feedback">Please enter an icon.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="moduleGroup" class="form-label">Module Group:</label>
+                    <select id="moduleGroup" th:field="*{moduleGroup}" class="form-select" required>
+                        <option value="" disabled selected>-- Select a Module Group --</option>
+                        <option th:each="group : ${moduleGroups}" th:value="${group.getId()}" th:text="${group.getName()}"></option>
+                    </select>
+                    <div class="invalid-feedback">Please select a module group.</div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="#" th:href="@{/modules}" class="btn btn-secondary ms-2">Back to List</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

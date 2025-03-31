@@ -1,0 +1,80 @@
+<div class="flex-grow-1 container mt-5">
+    <!-- Card for Form -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Create Group</h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/groups/create}" th:object="${group}" method="post" class="needs-validation" novalidate>
+
+                <div class="mb-3">
+                    <label for="groupName" class="form-label">Group Name</label>
+                    <input type="text" id="groupName" th:field="*{name}" class="form-control" placeholder="Enter group name" required>
+                    <div class="invalid-feedback">
+                        Group name is required.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="groupDepartment" class="form-label">Department</label>
+                    <select id="groupDepartment" name="groupDepartment" class="form-select" th:field="*{department}">
+                        <option value="" disabled selected>-- Select a Department --</option>
+                        <option th:each="department : ${departments}" th:value="${department.getId()}" th:text="${department.getName()}"></option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Department is required.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="groupRequestingDepartment" class="form-label">Requesting Department</label>
+                    <select id="groupRequestingDepartment" name="groupRequestingDepartment" class="form-select" th:field="*{requestingDepartment}">
+                        <option value="" disabled selected>-- Select a Requesting Department --</option>
+                        <option th:each="department : ${departments}" th:value="${department.getId()}" th:text="${department.getName()}"></option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Requesting Department is required.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="groupCreatedBy" class="form-label">Created By</label>
+                    <select id="groupCreatedBy" name="createdBy" class="form-select" th:field="*{createdBy}">
+                        <option value="" disabled selected>-- Select Created By User --</option>
+                        <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.username}"
+                                th:selected="${user.id == currentUser.id}"></option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Created By is required.
+                    </div>
+                </div>
+
+<!--                <div class="mb-3">-->
+<!--                    <label for="groupCreatedAt" class="form-label">Created At</label>-->
+<!--                    <input type="datetime-local" id="groupCreatedAt" th:field="*{createdAt}" class="form-control" required>-->
+<!--                    <div class="invalid-feedback">-->
+<!--                        Created At is required.-->
+<!--                    </div>-->
+<!--                </div>-->
+
+                <!-- Courses Selection -->
+                <div class="mb-3">
+                    <label for="groupCourses" class="form-label">Courses</label>
+                    <select id="groupCourses" name="groupCourses" class="form-select" th:field="*{courses}" multiple>
+                        <option value="" disabled>-- Select Courses --</option>
+                        <option th:each="course : ${courses}" th:value="${course.getId()}" th:text="${course.getName()}"></option>
+                    </select>
+                    <div class="invalid-feedback">
+                        At least one course should be selected.
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="#" th:href="@{/groups}" class="btn btn-secondary ms-2">Back to List</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

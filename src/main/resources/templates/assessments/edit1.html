@@ -1,0 +1,134 @@
+<div class="flex-grow-1 container mt-5">
+    <!-- Card for Form -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Update Assessment</h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/assessments/edit/{id}(id=${assessment.id})}" th:object="${assessment}" method="post" class="needs-validation" novalidate>
+
+                <!-- Title and Course -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="assessmentTitle" class="form-label">Title</label>
+                        <input type="text" id="assessmentTitle" th:field="*{title}" class="form-control" placeholder="Enter assessment title" required>
+                        <div class="invalid-feedback">
+                            Title is required.
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="assessmentCourse" class="form-label">Course</label>
+                        <select id="assessmentCourse" th:field="*{course}" class="form-select" required>
+                            <option value="" disabled selected>-- Select a Course --</option>
+                            <option th:each="course : ${courses}" th:value="${course.id}" th:text="${course.name}"></option>
+                        </select>
+                        <div class="invalid-feedback">
+                            A course must be selected.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exercises and Questions -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="assessmentExercises" class="form-label">Exercises</label>
+                        <select id="assessmentExercises" th:field="*{exercises}" class="form-select" multiple required>
+                            <option value="" disabled>-- Select Exercises --</option>
+                            <option th:each="exercise : ${exercises}" th:value="${exercise.id}" th:text="${exercise.name}"></option>
+                        </select>
+                        <div class="invalid-feedback">
+                            At least one exercise must be selected.
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="assessmentQuestions" class="form-label">Questions</label>
+                        <select id="assessmentQuestions" th:field="*{questions}" class="form-select" multiple required>
+                            <option value="" disabled>-- Select Questions --</option>
+                            <option th:each="question : ${questions}" th:value="${question.id}" th:text="${question.text}"></option>
+                        </select>
+                        <div class="invalid-feedback">
+                            At least one question must be selected.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assessment Type and Qualify Score -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="assessmentType" class="form-label">Assessment Type</label>
+                        <select id="assessmentType" th:field="*{assessmentType}" class="form-select" required>
+                            <option value="" disabled selected>-- Select Assessment Type --</option>
+                            <option th:each="type : ${assessmentTypes}" th:value="${type.id}" th:text="${type.name}"></option>
+                        </select>
+                        <div class="invalid-feedback">
+                            Assessment type is required.
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="assessmentCreatedBy" class="form-label">Created By</label>
+                        <input type="text" id="assessmentCreatedBy" class="form-control" th:value="${assessment.createdBy.username}" readonly />
+                        <div class="invalid-feedback">
+                            Created By is required.
+                        </div>
+
+                        <!-- Hidden input for createdBy ID -->
+                        <input type="hidden" name="createdBy" th:value="${assessment.createdBy.id}" />
+                    </div>
+                </div>
+
+                <!-- Total Score and Quiz Score Ratio -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="assessmentTotalScore" class="form-label">Total Score</label>
+                        <input type="number" id="assessmentTotalScore" name="totalScore" th:value="${assessment.totalScore}" class="form-control" placeholder="Enter total score" required>
+                        <div class="invalid-feedback">
+                            Total score is required.
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="assessmentQualifyScore" class="form-label">Qualify Score</label>
+                        <input type="number" id="assessmentQualifyScore" name="qualifyScore" th:value="${assessment.qualifyScore}" class="form-control" placeholder="Enter qualify score" required>
+                        <div class="invalid-feedback">
+                            Qualify score is required.
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Exercise Score Ratio and Time Limit -->
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="assessmentQuizScoreRatio" class="form-label">Quiz Score Ratio</label>
+                        <input type="number" id="assessmentQuizScoreRatio" name="quizScoreRatio" th:value="${assessment.quizScoreRatio}" class="form-control" placeholder="Enter quiz score ratio" required>
+                        <div class="invalid-feedback">
+                            Quiz score ratio is required.
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="assessmentExerciseScoreRatio" class="form-label">Exercise Score Ratio</label>
+                        <input type="number" id="assessmentExerciseScoreRatio" name="exerciseScoreRatio" th:value="${assessment.exerciseScoreRatio}" class="form-control" placeholder="Enter exercise score ratio" required>
+                        <div class="invalid-feedback">
+                            Exercise score ratio is required.
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="assessmentTimeLimit" class="form-label">Time Limit</label>
+                        <input type="number" id="assessmentTimeLimit" name="timeLimit" th:value="${assessment.timeLimit}" class="form-control" placeholder="Enter time limit in minutes" required>
+                        <div class="invalid-feedback">
+                            Time limit is required.
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="#" th:href="@{/assessments}" class="btn btn-secondary ms-2">Back to List</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

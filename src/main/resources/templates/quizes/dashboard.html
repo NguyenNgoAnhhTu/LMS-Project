@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Sinh Viên</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4895ef;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --card-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            --transition-speed: 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="white" fill-opacity="0.05"/></svg>');
+            background-size: 150px;
+            opacity: 0.3;
+        }
+
+        .dashboard-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .student-info {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform var(--transition-speed);
+        }
+
+        .student-info:hover {
+            transform: translateY(-5px);
+        }
+
+        .student-info h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 22px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 12px;
+            position: relative;
+        }
+
+        .student-info h2::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 80px;
+            height: 2px;
+            background: var(--primary-color);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            padding: 20px;
+            background: var(--light-color);
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-color);
+            transition: all var(--transition-speed);
+        }
+
+        .info-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+        }
+
+        .info-item strong {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            font-size: 15px;
+        }
+
+        .info-item span {
+            color: var(--dark-color);
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 25px;
+            transition: transform var(--transition-speed);
+        }
+
+        .chart-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .chart-container h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 22px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 12px;
+            position: relative;
+        }
+
+        .chart-container h2::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 80px;
+            height: 2px;
+            background: var(--primary-color);
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            background: white;
+            box-shadow: var(--card-shadow);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .stats-table th, .stats-table td {
+            padding: 15px 20px;
+            text-align: left;
+        }
+
+        .stats-table th {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .stats-table tr:nth-child(even) {
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+
+        .stats-table tr {
+            transition: background-color var(--transition-speed);
+        }
+
+        .stats-table tr:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+
+        .stats-table td {
+            color: var(--dark-color);
+            border-bottom: 1px solid #e9ecef;
+            font-size: 15px;
+        }
+
+        .error-message {
+            color: white;
+            padding: 15px;
+            background: var(--warning-color);
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+        }
+
+        .error-message::before {
+            content: '\f071';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 400px !important;
+            margin-top: 20px;
+        }
+
+        /* Fixed-height container for charts */
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+
+        /* Badge styling for info items */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+            color: white;
+        }
+
+        .badge-high {
+            background-color: #4CC9F0;
+        }
+
+        .badge-medium {
+            background-color: #4895EF;
+        }
+
+        .badge-low {
+            background-color: #F72585;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 10px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .dashboard-header h1 {
+                font-size: 24px;
+            }
+
+            .chart-container canvas {
+                height: 300px !important;
+            }
+
+            .chart-wrapper {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="dashboard-container">
+        <div class="dashboard-header" data-aos="fade-down">
+            <h1><i class="fas fa-chart-line"></i> Dashboard Sinh Viên</h1>
+        </div>
+
+        <!-- Thông báo lỗi nếu có -->
+        <div th:if="${error}" class="error-message" data-aos="fade-up" th:text="${error}"></div>
+
+        <!-- Thông tin sinh viên -->
+        <div class="student-info" data-aos="fade-up">
+            <h2><i class="fas fa-user-graduate"></i> Thông tin sinh viên</h2>
+            <div class="info-grid">
+                <div class="info-item" data-aos="fade-up" data-aos-delay="100">
+                    <strong><i class="fas fa-id-card"></i> Họ và tên:</strong>
+                    <span th:text="${student != null ? student.lastName + ' ' + student.firstName : 'N/A'}">Nguyễn Văn A</span>
+                </div>
+                <div class="info-item" data-aos="fade-up" data-aos-delay="200">
+                    <strong><i class="fas fa-fingerprint"></i> MSSV:</strong>
+                    <span th:text="${student != null ? student.id : 'N/A'}">12345678</span>
+                </div>
+                <div class="info-item" data-aos="fade-up" data-aos-delay="300">
+                    <strong><i class="fas fa-envelope"></i> Email:</strong>
+                    <span th:text="${student != null ? student.email : 'N/A'}">example@email.com</span>
+                </div>
+                <div class="info-item" data-aos="fade-up" data-aos-delay="400">
+                    <strong><i class="fas fa-user"></i> Username:</strong>
+                    <span th:text="${student != null ? student.username : 'N/A'}">username</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Biểu đồ điểm số -->
+        <div class="chart-container" data-aos="fade-up">
+            <h2><i class="fas fa-chart-bar"></i> Biểu đồ điểm số và chênh lệch</h2>
+            <div class="chart-wrapper">
+                <canvas id="quizChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Bảng thống kê chi tiết -->
+        <div class="chart-container" data-aos="fade-up">
+            <h2><i class="fas fa-clipboard-list"></i> Chi tiết kết quả Quiz</h2>
+            <table class="stats-table">
+                <thead>
+                <tr>
+                    <th><i class="fas fa-file-alt"></i> Quiz</th>
+                    <th><i class="fas fa-book"></i> Khóa học</th>
+                    <th><i class="fas fa-star"></i> Điểm số</th>
+                    <th><i class="fas fa-clock"></i> Thời gian làm bài (phút)</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="score, scoreStat : ${quizScores}" th:data-aos="'fade-up'" th:data-aos-delay="${scoreStat.index * 50}">
+                    <td th:text="${score.key}">Quiz Name</td>
+                    <td th:text="${quizCourses[score.key.split(' \\| ')[0]]}">Course Name</td>
+                    <td>
+                        <span th:text="${score.value}">Score</span>
+                        <span th:class="${score.value >= 8 ? 'badge badge-high' : (score.value >= 6.5 ? 'badge badge-medium' : 'badge badge-low')}">
+                            <i th:class="${score.value >= 8 ? 'fas fa-thumbs-up' : (score.value >= 6.5 ? 'fas fa-check' : 'fas fa-exclamation')}"></i>
+                        </span>
+                    </td>
+                    <td th:text="${quizDurations[score.key]}">Duration</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Thống kê theo khóa học -->
+        <div class="chart-container" data-aos="fade-up">
+            <h2><i class="fas fa-graduation-cap"></i> Thống kê Quiz theo khóa học</h2>
+            <table class="stats-table">
+                <thead>
+                <tr>
+                    <th><i class="fas fa-book"></i> Khóa học</th>
+                    <th><i class="fas fa-tasks"></i> Số bài Quiz</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="course, courseStat : ${courseQuizCount}" th:data-aos="'fade-up'" th:data-aos-delay="${courseStat.index * 50}">
+                    <td th:text="${course.key}">Course Name</td>
+                    <td th:text="${course.value}">Quiz Count</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+document.addEventListener("DOMContentLoaded", function() {
+    // Khởi tạo AOS
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100
+        });
+    }
+
+    // Đăng ký ChartDataLabels plugin
+    if (typeof Chart !== 'undefined' && typeof ChartDataLabels !== 'undefined') {
+        Chart.register(ChartDataLabels);
+    }
+
+    // Lấy dữ liệu từ Thymeleaf
+    const quizScores = /*[[${quizScores}]]*/ {};
+    const scoreDifferences = /*[[${scoreDifferences}]]*/ [];
+
+    console.log('Quiz Scores:', quizScores);
+    console.log('Score Differences:', scoreDifferences);
+
+    if (quizScores && Object.keys(quizScores).length > 0) {
+        createChart(quizScores, scoreDifferences);
+    } else {
+        const chartWrapper = document.querySelector('.chart-wrapper');
+        if (chartWrapper) {
+            chartWrapper.innerHTML = '<div class="alert alert-warning">Không có dữ liệu biểu đồ</div>';
+        }
+    }
+});
+
+function createChart(quizScores, scoreDifferences) {
+    const ctx = document.getElementById("quizChart");
+    if (!ctx) {
+        console.error("Không tìm thấy canvas element");
+        return;
+    }
+
+    // Xử lý dữ liệu
+    const labels = Object.keys(quizScores).map(key => key.split('|')[0].trim());
+    const scores = Object.values(quizScores);
+    const differences = scoreDifferences || Array(scores.length).fill(0);
+
+    // Tạo gradients
+    const barGradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+    barGradient.addColorStop(0, 'rgba(67, 97, 238, 0.8)');
+    barGradient.addColorStop(1, 'rgba(67, 97, 238, 0.3)');
+
+    const lineGradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+    lineGradient.addColorStop(0, 'rgba(247, 37, 133, 0.2)');
+    lineGradient.addColorStop(1, 'rgba(247, 37, 133, 0.05)');
+
+    try {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Điểm số',
+                        data: scores,
+                        backgroundColor: barGradient,
+                        borderColor: 'rgba(67, 97, 238, 1)',
+                        borderWidth: 1,
+                        borderRadius: 5,
+                        order: 2,
+                        datalabels: {
+                            color: '#212529',
+                            anchor: 'end',
+                            align: 'top',
+                            offset: 4,
+                            formatter: function(value) {
+                                return value.toFixed(1);
+                            },
+                            font: {
+                                weight: 'bold',
+                                size: 11
+                            }
+                        }
+                    },
+                    {
+                        label: 'Chênh lệch điểm',
+                        data: differences,
+                        type: 'line',
+                        borderColor: 'rgba(247, 37, 133, 1)',
+                        backgroundColor: lineGradient,
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(247, 37, 133, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        order: 1,
+                        datalabels: {
+                            color: 'rgba(247, 37, 133, 1)',
+                            align: 'bottom',
+                            offset: 4,
+                            formatter: function(value) {
+                                return value !== 0 ? (value > 0 ? '+' + value.toFixed(1) : value.toFixed(1)) : '';
+                            },
+                            font: {
+                                weight: 'bold',
+                                size: 11
+                            }
+                        }
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        top: 20
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            drawBorder: false,
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toFixed(1);
+                            },
+                            font: {
+                                family: "'Segoe UI', sans-serif"
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45,
+                            font: {
+                                family: "'Segoe UI', sans-serif"
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'center',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: {
+                                size: 12,
+                                family: "'Segoe UI', sans-serif"
+                            }
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleFont: {
+                            family: "'Segoe UI', sans-serif"
+                        },
+                        bodyFont: {
+                            family: "'Segoe UI', sans-serif"
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y.toFixed(1);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Lỗi khi tạo biểu đồ:", error);
+        const chartWrapper = document.querySelector('.chart-wrapper');
+        if (chartWrapper) {
+            chartWrapper.innerHTML = '<div class="alert alert-danger">Lỗi khi tạo biểu đồ</div>';
+        }
+    }
+}
+</script>
+</div>
+</body>
+</html>

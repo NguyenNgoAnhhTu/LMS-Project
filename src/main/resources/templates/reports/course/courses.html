@@ -1,0 +1,50 @@
+
+<style>
+    /* Define specific widths for each column */
+    .table th:nth-child(1), .table td:nth-child(1) { width: 10%; } /* First column */
+    .table th:nth-child(2), .table td:nth-child(2) { width: 15%; } /* Second column */
+    .table th:nth-child(3), .table td:nth-child(3) { width: 35%; } /* Third column */
+    .table th:nth-child(4), .table td:nth-child(4) { width: 15%; } /* Fourth column */
+    .table th:nth-child(5), .table td:nth-child(5) { width: 15%; } /* Fifth column */
+    .table th:nth-child(6), .table td:nth-child(6) { width: 10%; } /* Sixth column */
+</style>
+
+<div class="mt-1">
+    <h1 class="mb-0 text-center">Course Overview Report</h1>
+    <!-- Static header table -->
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th class="text-center">#</th>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Creator</th>
+            <th>Instructor</th>
+            <th>Published</th>
+        </tr>
+        </thead>
+    </table>
+
+    <!-- Scrollable second table (content) -->
+    <div class="overflow-auto" style="max-height: 53vh;"> <!-- Adjust height as needed -->
+        <table class="table table-striped">
+            <tbody>
+            <!-- Iterate over courses -->
+            <tr th:each="course, stat : ${courses}">
+                <td class="text-center" th:text="${stat.index + 1}"></td>
+                <td th:text="${course.code}"></td>
+                <td th:text="${course.name}"></td>
+                <td th:text="${course.creator.username}"></td>
+                <td th:text="${course.instructor.username}"></td>
+                <td th:text="${course.published ? 'Yes' : 'No'}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-end">
+       <a href="#" th:href="@{/reports}" class="btn btn-secondary ms-2">Back to Reports</a>
+    </div>
+</div>
+
+

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FSA - Roles</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+<h1>Role List</h1>
+<table>
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Role Name</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Loop through roles and display them -->
+    <tr th:each="role, iterStat : ${roles}">
+        <td class="text-center" th:text="${iterStat.index + 1}"></td> <!-- Start numbering from 1 -->
+        <td th:text="${role.name}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    // Automatically trigger the browser's print dialog
+    window.onload = function() {
+        window.print();
+    };
+</script>
+</body>
+</html>

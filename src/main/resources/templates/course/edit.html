@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head th:replace="~{fragments :: common_header('Modules', '/style.css')}"></head>
+
+<body>
+<div class="d-flex flex-column min-vh-100">
+    <!-- Header -->
+    <header th:replace="~{fragments :: header}"></header>
+
+    <!--&lt;!&ndash; Sidebar &ndash;&gt;-->
+    <!--<aside th:replace="fragments/sidebar :: sidebar"></aside>-->
+
+    <!-- Main Content -->
+    <div class="container mt-2">
+        <!-- Hiển thị modal -->
+        <div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="alertModalLabel">Notification</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Thông báo sẽ được chèn động ở đây -->
+                        <p id="alertMessage" th:text="${alertMessage ?: 'Default message goes here'}"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- modal upload material -->
+        <div class="modal fade" id="uploadMaterial" tabindex="-1" aria-labelledby="uploadMaterialLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="uploadMaterialLabel">Upload Material</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="uploadMaterialForm" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <input type="hidden" name="sectionId" id="sectionId">
+                            <!-- File input -->
+                            <div class="mb-3">
+                                <label for="materialFile" class="form-label">Upload File</label>
+                                <input type="file" class="form-control" id="materialFile" name="file" required>
+                            </div>
+
+                            <!-- Material type -->
+                            <div class="mb-3">
+                                <label for="materialType" class="form-label">Material Type</label>
+                                <select class="form-select" id="materialType" name="materialType" required>
+                                    <option value="" disabled selected>Select Type</option>
+                                    <option value="ASSIGNMENTS">Assignments</option>
+                                    <option value="LABS">Labs</option>
+                                    <option value="LECTURES">Lectures</option>
+                                    <option value="REFERENCES">References</option>
+                                    <option value="ASSESSMENTS">Assessments</option>
+                                </select>
+                            </div>
+
+                            <!-- Title -->
+                            <div class="mb-3">
+                                <label for="materialTitle" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="materialTitle" name="title" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <nav>
+            <div class="nav nav-tabs mb-4" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-detail-tab" data-bs-toggle="tab" data-bs-target="#nav-detail" type="button" role="tab" aria-controls="nav-detail" aria-selected="true">Details</button>
+                <button class="nav-link" id="nav-section-tab" data-bs-toggle="tab" data-bs-target="#nav-section" type="button" role="tab" aria-controls="nav-section" aria-selected="false">Sections</button>
+                <button class="nav-link" id="nav-topic-tab" data-bs-toggle="tab" data-bs-target="#nav-topic" type="button" role="tab" aria-controls="nav-topic" aria-selected="false">Topic-Tags</button>
+                <button class="nav-link" id="nav-material-tab" data-bs-toggle="tab" data-bs-target="#nav-material" type="button" role="tab" aria-controls="nav-material" aria-selected="false" th:data-courseid="${course.id}">Materials</button>
+            </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-detail" role="tabpanel" aria-labelledby="nav-detail-tab" tabindex="0">
+                <!--             Display error message if any -->
+                <div th:if="${error}" class="alert alert-danger">
+                    <p th:text="${error}"></p>
+                </div>
+
+                <!-- Form to edit the course -->
+                <form th:action="@{/courses/edit/{id}(id=${course.id})}" th:object="${course}" method="post" class="needs-validation row g-3" novalidate>
+                    <!-- Course Name Field -->
+                    <input type="hidden" id="courseId" th:field="*{id}" class="form-control" placeholder="Enter course name" required>
+                    <div class="mb-3 col-md-8">
+                        <label for="courseName" class="form-label">Course Name</label>
+                        <input type="text" id="courseName" th:field="*{name}" class="form-control" placeholder="Enter course name" required>
+                        <div class="invalid-feedback">
+                            Course name is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Code Field -->
+                    <div class="mb-3 col-md-4">
+                        <label for="courseCode" class="form-label">Course Code</label>
+                        <input type="text" id="courseCode" th:field="*{code}" class="form-control" placeholder="Enter course code" required>
+                        <div class="invalid-feedback">
+                            Course code is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Description Field -->
+                    <div class="mb-3 col-12">
+                        <label for="courseDescription" class="form-label">Course Description</label>
+                        <textarea id="courseDescription" th:field="*{description}" class="form-control" placeholder="Enter course description" rows="4" required></textarea>
+                        <div class="invalid-feedback">
+                            Course description is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Duration Field -->
+                    <div class="mb-3 col-sm-3">
+                        <label for="courseDuration" class="form-label">Course Duration (Weeks)</label>
+                        <input type="number" id="courseDuration" th:field="*{durationInWeeks}" class="form-control" placeholder="Enter course duration in weeks" required>
+                        <div class="invalid-feedback">
+                            Course duration is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Language Field -->
+                    <div class="mb-3 col-sm-6">
+                        <label for="courseLanguage" class="form-label">Course Language</label>
+                        <input type="text" id="courseLanguage" th:field="*{language}" class="form-control" placeholder="Enter course language" required>
+                        <div class="invalid-feedback">
+                            Course language is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Level Field -->
+                    <div class="mb-3 col-sm-3">
+                        <label for="courseLevel" class="form-label">Course Level</label>
+                        <input type="text" id="courseLevel" th:field="*{level}" class="form-control" placeholder="Enter course level (e.g., Beginner, Intermediate, Advanced)" required>
+                        <div class="invalid-feedback">
+                            Course level is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Price Field -->
+                    <div class="mb-3 col-sm-6   ">
+                        <label for="coursePrice" class="form-label">Course Price</label>
+                        <input type="number" id="coursePrice" th:field="*{price}" class="form-control" placeholder="Enter course price" required>
+                        <div class="invalid-feedback">
+                            Course price is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Discount Field -->
+                    <div class="mb-3 col-sm-6">
+                        <label for="courseDiscount" class="form-label">Course Discount (%)</label>
+                        <input type="number" id="courseDiscount" th:field="*{discount}" class="form-control" placeholder="Enter discount percentage" required>
+                        <div class="invalid-feedback">
+                            Discount percentage is required.
+                        </div>
+                    </div>
+
+                    <!-- Course Published Field -->
+                    <div class="mb-3 col-12">
+                        <label for="coursePublished" class="form-label">Published</label>
+                        <input type="checkbox" id="coursePublished" th:field="*{published}" class="form-check-input">
+                    </div>
+
+                    <!-- Buttons to save or cancel -->
+                    <div class="d-flex justify-content-center mt-3">
+                        <button type="submit" class="btn btn-success me-2" id="defaultButton">Save Changes</button>
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='/courses'">Cancel</button>
+                    </div>
+                </form>
+            </div>
+            <div class="tab-pane fade" id="nav-section" role="tabpanel" aria-labelledby="nav-section-tab" tabindex="0">
+                <div id="Tab2" class="tab content" style="display: block; padding: 1.25rem; border-right: 0.125rem solid rgb(204, 204, 204); border-bottom: 0.125rem solid rgb(204, 204, 204); border-left: 0.125rem solid rgb(204, 204, 204); border-image: initial; border-top: none;">
+                    <!-- Warning message -->
+                    <div class="alert alert-warning" role="alert">
+                        Note: You can't delete sections that have materials.
+                    </div>
+                    <!-- First column: sections -->
+                    <div class="form-group">
+                        <h3 style="color: #2b59c3;">Manage Sections</h3>
+                        <div style="display: flex; flex-direction: column; max-width: 37.5rem;">
+                            <!-- Section Container -->
+                            <ul id="section-container" style="padding: 0; list-style-type: none; max-height: 25rem; overflow-y: auto;">
+                                <li th:each="section : ${sections}" class="section-item" style="margin-bottom: 0.625rem;">
+                                    <form class="section-form" action="#" th:data-id="${section.id}" method="POST" style="display: flex; align-items: center; gap: 0.625rem;">
+                                        <label for="sectionName" class="drag-handle" style="cursor: move;">☰</label>
+                                        <input type="text" name="name" th:value="${section.name}" class="form-control" style="flex: 1; max-width: 31.25rem;" required>
+                                        <div id="action-btn" class="d-none">
+                                            <button type="submit" class="btn btn-primary me-2 save-btn">Save</button>
+                                            <button type="reset" class="btn btn-secondary">Cancel</button>
+                                        </div>
+                                        <input type="hidden" name="id" th:value="${section.id}">
+                                    </form>
+                                </li>
+                            </ul>
+                            <!-- Add New Sections -->
+                            <div id="new-sections-container" style="display: flex; flex-direction: column; max-width: 37.5rem;"></div>
+                            <button type="button" id="add-new-section" th:data-courseId="${course.id}" class="btn btn-secondary" style="margin-top: 0.625rem;">
+                                <i class="fas fa-plus"></i> Add Section
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="tab-pane fade" id="nav-topic" role="tabpanel" aria-labelledby="nav-topic-tab" tabindex="0">
+                topic - tags
+            </div>
+            <div class="tab-pane fade" id="nav-material" role="tabpanel" aria-labelledby="nav-material-tab" tabindex="0">
+                <div class="row my-4">
+                    <!-- PDF Section -->
+                    <div class="col-lg-9" style="border: solid 1px #000">
+                        <div class="mx-auto" id="pdf-container" style=" overflow-y: auto; width: fit-content; height: 580px"></div>
+                    </div>
+
+                    <!-- Module Section -->
+                    <div class="col-lg-3">
+                        <div class="card shadow-sm">
+                            <div class="card-header d-flex justify-content-between">
+                                <h3 class="h5">Content</h3>
+                            </div>
+
+                            <ul class="list-group list-group-flush" id="file-container">
+                                <!-- Iterate through sections -->
+                                <li class="list-group-item" th:each="section : ${response}">
+                                    <!-- Display section name -->
+                                    <div class="section-item-container">
+                                        <span class="section-name" th:text="${section.sectionName}"></span>
+                                        <span th:data-ids="${section.sectionId}" class="add-icon float-end" style="color: blue; cursor: pointer;"><i class="bi bi-plus-circle"></i></span>
+                                    </div>
+
+                                    <!-- Iterate through course materials -->
+                                    <ul class="ps-4" th:id="'section-' + ${section.sectionId} + '-materials'" th:data-id="${section.sectionId}">
+                                        <li class="pdf-link" th:each="material : ${section.courseMaterials}" th:data-url="${material.url}">
+                                            <!-- Display material title with a link -->
+                                            <a href="#" th:text="${material.title}"></a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments :: footer}"></footer>
+</div>
+<script th:replace="~{fragments :: scripts}"></script>
+<script>
+    $(document).ready(function () {
+
+        const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+        $('#nav-detail form').on('submit', function (e) {
+            e.preventDefault(); // Ngăn chặn submit mặc định
+
+            // Lấy dữ liệu từ form
+            const formData = new FormData(this);
+            const courseId = formData.get('id'); // Lấy ID của course
+
+            // Thực hiện yêu cầu AJAX
+            $.ajax({
+                url: `/courses/edit/${courseId}`, // URL của API
+                type: 'POST', // Phương thức POST
+                data: formData, // Dữ liệu form
+                processData: false, // Không xử lý dữ liệu
+                contentType: false, // Không đặt Content-Type
+                success: function (data) {
+                    console.log(data)
+                    // Cập nhật giao diện với dữ liệu mới
+                    $('#courseName').val(data.name);
+                    $('#courseCode').val(data.code);
+                    $('#courseDescription').val(data.description);
+                    $('#courseDuration').val(data.durationInWeeks);
+                    $('#courseLanguage').val(data.language);
+                    $('#courseLevel').val(data.level);
+                    $('#coursePrice').val(data.price);
+                    $('#courseDiscount').val(data.discount);
+                    $('#coursePublished').prop('checked', data.published);
+
+                    // Hiển thị modal thông báo thành công
+                    $('#alertModalLabel').text('Success');
+                    $('#alertMessage').text('Update Course Detail successfully!');
+                    $('#alertModal').modal('show');
+                },
+                error: function (xhr) {
+                    // Hiển thị modal thông báo lỗi
+                    console.error(xhr.responseText);
+                    $('#alertModalLabel').text('Error');
+                    $('#alertMessage').text('Unexpected error occurred!');
+                    $('#alertModal').modal('show');
+                }
+            });
+        });
+
+        // Hiển thị nút Action khi có thay đổi
+        $(document).on('input', '.section-form input[name="name"]', function () {
+            const actionBtn = $(this).closest('.section-form').find('#action-btn');
+            actionBtn.removeClass('d-none').addClass('d-flex');
+        });
+
+        // Ẩn nút Action khi nhấn reset
+        $(document).on('reset', '.section-form', function () {
+            const actionBtn = $(this).find('#action-btn');
+            actionBtn.removeClass('d-flex').addClass('d-none');
+        });
+
+        // Lắng nghe sự kiện Save
+        $(document).on('click', '.save-btn', function (e) {
+            e.preventDefault();
+            const form = $(this).closest('.section-form');
+
+            const formData = form.serialize(); // Lấy toàn bộ dữ liệu form
+            console.log(formData);
+            // Lấy id từ thuộc tính data-id của form
+            const id = form.data('id');
+
+            // Thay thế {id} bằng giá trị thực tế
+            const url = `/sections/edit/${id}`;
+
+            console.log(url);
+
+            // // Gửi AJAX
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    alert('Section updated successfully!');
+                    form.find('#action-btn').removeClass('d-flex').addClass('d-none');
+                },
+                error: function (xhr) {
+                    alert('Error updating section: ' + xhr.responseText);
+                }
+            });
+        });
+        // Thêm Section mới
+        $('#add-new-section').on('click', function () {
+            const courseId = $(this).data('courseid'); // Lấy giá trị courseId từ data-attribute
+            console.log("Course ID:", courseId);
+            const newSectionHtml = `
+        <li class="section-item" style="margin-bottom: 0.625rem;">
+            <form class="section-form" action="#" th:data-id="null" method="POST" style="display: flex; align-items: center; gap: 0.625rem;">
+                <label class="drag-handle" style="cursor: move;">☰</label>
+                <input type="text" name="name" class="form-control" style="flex: 1; max-width: 31.25rem;" placeholder="Enter section name" required>
+                <input type="hidden" name="courseId" value="${courseId}" >
+                <button type="button" class="create-btn btn btn-success">Save</button>
+                <button type="button" class="cancel-btn btn btn-secondary">Cancel</button>
+            </form>
+        </li>`;
+            $('#section-container').append(newSectionHtml);
+        });
+
+
+        $(document).on('click', '.create-btn', function (e) {
+            e.preventDefault();
+
+            const form = $(this).closest('.section-form');
+            const url = '/sections/create';
+            const formData = form.serialize(); // Lấy dữ liệu từ form
+
+            // Lấy courseId từ data-courseId của nút "Add Section"
+            const courseId = $('#add-new-section').data('courseId'); // Hoặc lấy từ form nếu form có data-courseId
+
+            // Thêm courseId vào formData (sử dụng jQuery để thêm vào dữ liệu)
+            const newFormData = formData + '&courseId=' + courseId; // Thêm courseId vào
+
+            // Gửi AJAX để lưu section mới
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: newFormData, // Dữ liệu đã thêm courseId
+                success: function (response) {
+                    console.log(response);
+                    alert('New section created successfully!');
+                    // Cập nhật giao diện (ví dụ: thêm ID từ backend)
+                    form.attr('data-id', response.id);
+                },
+                error: function (xhr) {
+                    alert('Error creating section: ' + xhr.responseText);
+                }
+            });
+        });
+
+        // Xử lý hủy bỏ thêm section
+        $(document).on('click', '.cancel-btn', function () {
+            $(this).closest('li.section-item').remove(); // Xóa section mới
+        });
+
+
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+
+        const pdfContainer = document.getElementById('pdf-container');
+        let pdfDocument = null;
+        let totalPages = 0;
+        let pagesRendered = 0;
+        const pagesPerBatch = 10; // Số trang tải mỗi lần
+
+// 🧹 Xóa PDF hiện tại trước khi tải file mới
+        function clearPDFContainer() {
+            pdfContainer.innerHTML = '';
+            pdfDocument = null;
+            totalPages = 0;
+            pagesRendered = 0;
+        }
+
+// 🖼 Render một trang PDF
+        async function renderPage(pageNumber) {
+            const page = await pdfDocument.getPage(pageNumber);
+
+            // Tạo canvas để hiển thị trang PDF
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            pdfContainer.appendChild(canvas);
+
+            // Xác định tỷ lệ zoom phù hợp
+            const viewport = page.getViewport({ scale: 1 });
+            const containerWidth = pdfContainer.clientWidth;
+            const desiredScale = containerWidth / viewport.width;
+            const minimumScale = 1; // 📌 Cho phép PDF nhỏ hơn 100% nếu cần
+            const finalScale = Math.max(desiredScale, minimumScale);
+
+            // Cập nhật viewport theo tỷ lệ mới
+            const scaledViewport = page.getViewport({ scale: finalScale });
+            canvas.width = scaledViewport.width;
+            canvas.height = scaledViewport.height;
+
+            // Render trang
+            const renderContext = {
+                canvasContext: context,
+                viewport: scaledViewport,
+            };
+            await page.render(renderContext).promise;
+        }
+
+// 🏃‍♂️ Load nhiều trang PDF (theo batch)
+        async function loadPages(startPage, count) {
+            const endPage = Math.min(startPage + count - 1, totalPages);
+
+            for (let i = startPage; i <= endPage; i++) {
+                await renderPage(i);
+            }
+
+            // 📌 Cập nhật `pagesRendered` để tránh tải lại trang cũ
+            pagesRendered = endPage;
+        }
+
+// 📄 Khởi tạo và tải PDF
+        async function initializePDF(url) {
+            try {
+                clearPDFContainer();
+
+                pdfDocument = await pdfjsLib.getDocument(url).promise;
+                totalPages = pdfDocument.numPages;
+
+                // Tải batch đầu tiên
+                await loadPages(1, pagesPerBatch);
+
+                // 🔄 Lazy loading khi cuộn xuống
+                pdfContainer.onscroll = async () => {
+                    const { scrollTop, scrollHeight, clientHeight } = pdfContainer;
+                    if (scrollTop + clientHeight >= scrollHeight - 50 && pagesRendered < totalPages) {
+                        await loadPages(pagesRendered + 1, pagesPerBatch);
+                    }
+                };
+
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                pdfContainer.innerHTML = `<p class="text-danger">Failed to load PDF. Please try again.</p>`;
+            }
+        }
+
+// 📌 Xử lý sự kiện khi click vào link tải PDF
+        $('.pdf-link').on('click', function (e) {
+            e.preventDefault();
+            const url = $(this).data("url");
+
+            // 📌 Kiểm tra nếu PDF đã tải trước đó, reset scroll để tránh lỗi
+            pdfContainer.scrollTop = 0;
+
+            initializePDF(url);
+        });
+
+        /// add material
+        // Handle click on the "Add" icon
+        $('.add-icon').on('click', function () {
+            const sectionId = $(this).data('ids'); // Get the section ID from the data attribute
+            $('#sectionId').val(sectionId); // Set the hidden input value for the modal
+            $('#uploadMaterial').modal('show'); // Show the modal
+        });
+
+        // Handle form submission
+        $('#uploadMaterialForm').on('submit', function (e) {
+            e.preventDefault(); // Prevent the default form submission
+            const formData = new FormData(this); // Collect all form data
+
+            const secID = formData.get("sectionId");
+            // console.log(secID);
+            //
+            // formData.forEach((value, key) => {
+            //     console.log(key + ": " + value);
+            // });
+
+
+
+            $.ajax({
+                url: '/materials/upload', // Replace with your backend endpoint
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    console.log(response);
+                    alert('Material uploaded successfully!');
+                    $('#uploadMaterial').modal('hide'); // Close the modal
+                    // Optionally update the UI dynamically
+                    const sectionContainer = $(`#section-${secID}-materials`);
+
+                    // Dynamically append the new material to the appropriate section
+                    const newMaterialHTML = `
+            <li class="pdf-link" data-url="${response.url}">
+                <a href="#">${response.title}</a>
+            </li>
+        `;
+
+                    // Append the new material to the section
+                    sectionContainer.append(newMaterialHTML);
+                },
+                error: function (xhr) {
+                    alert('Error uploading material: ' + xhr.responseText);
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

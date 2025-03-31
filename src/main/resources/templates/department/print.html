@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Department List</title>
+    <link rel="stylesheet" href="/css/print.css">
+</head>
+<body>
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Exercise List</h1>
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+        <tr>
+            <th class="text-center">#</th>
+            <th>Name</th>
+            <th>Location</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="department, iterStat : ${departments}">
+            <td class="text-center" th:text="${iterStat.index + 1}"></td> <!-- Start numbering from 1 -->
+            <td th:text="${department.name}"></td>
+            <td th:text="${department.location != null ? department.location.name : 'N/A'}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Automatically trigger the browser's print dialog
+    window.onload = function () {
+        window.print();
+    };
+</script>
+</body>
+</html>

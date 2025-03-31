@@ -1,0 +1,86 @@
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Reports</h1>
+    <div class="accordion" id="reportsAccordion">
+        <div class="row">
+            <!-- Course Reports Card -->
+            <div class="col-md-3">
+                <div class="accordion-item shadow border rounded">
+                    <h2 class="accordion-header text-center" id="courseReportsHeader">
+                        <button class="btn btn-primary text-uppercase fw-bold text-white mx-auto w-100 py-4" type="button" data-bs-toggle="collapse" data-bs-target="#courseReports" aria-expanded="true" aria-controls="courseReports">
+                            Course Reports
+                        </button>
+                    </h2>
+                    <div id="courseReports" class="accordion-collapse collapse show" aria-labelledby="courseReportsHeader" data-bs-parent="#reportsAccordion">
+                        <div class="accordion-body">
+                            <a th:href="@{/course-reports/overview}" class="btn btn-outline-primary btn-lg mb-3 w-100">Course Overview</a>
+                            <a th:href="@{/course-reports/completion}" class="btn btn-outline-primary btn-lg mb-3 w-100">Course Completion</a>
+                            <a th:href="@{/course-reports/material-usage}" class="btn btn-outline-primary btn-lg mb-3 w-100">Material Usage</a>
+                            <a th:href="@{/course-reports/material-type-distribution}" class="btn btn-outline-primary btn-lg w-100">Material Type Distribution</a>
+                            <a th:href="@{/course-reports/duration}" class="btn btn-outline-primary btn-lg w-100">Course Duration</a>
+                            <a th:href="@{/course-reports/department}" class="btn btn-outline-primary btn-lg w-100">Department Report</a>
+                            <a th:href="@{/course-reports/course-users}" class="btn btn-outline-primary btn-lg w-100">Course Users</a>
+                            <a th:href="@{/course-reports/material-duration}" class="btn btn-outline-primary btn-lg w-100">Material Duration Report</a>
+                            <a th:href="@{/course-reports/enrollment-trends}" class="btn btn-outline-primary btn-lg w-100">Enrollment Trends</a>
+                            <a th:href="@{/course-reports/price}" class="btn btn-outline-primary btn-lg w-100">Price Report</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Reports Card -->
+            <div class="col-md-3">
+                <div class="accordion-item shadow border rounded">
+                    <h2 class="accordion-header text-center" id="studentReportsHeader">
+                        <button class="btn btn-success text-uppercase fw-bold text-white mx-auto w-100 py-4" type="button" data-bs-toggle="collapse" data-bs-target="#studentReports" aria-expanded="false" aria-controls="studentReports">
+                            Student Reports
+                        </button>
+                    </h2>
+                    <div id="studentReports" class="accordion-collapse collapse" aria-labelledby="studentReportsHeader" data-bs-parent="#reportsAccordion">
+                        <div class="accordion-body">
+                            <a th:href="@{/user-reports/student-enrollment}" class="btn btn-outline-success btn-lg mb-3 w-100">Student Enrollment</a>
+                            <a th:href="@{/user-reports/user-progress}" class="btn btn-outline-success btn-lg mb-3 w-100">User Progress</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessment Reports Card -->
+            <div class="col-md-3">
+                <div class="accordion-item shadow border rounded">
+                    <h2 class="accordion-header text-center" id="assessmentReportsHeader">
+                        <button class="btn btn-info text-uppercase fw-bold text-white mx-auto w-100 py-4" type="button" data-bs-toggle="collapse" data-bs-target="#assessmentReports" aria-expanded="false" aria-controls="assessmentReports">
+                            Assessment Reports
+                        </button>
+                    </h2>
+                    <div id="assessmentReports" class="accordion-collapse collapse" aria-labelledby="assessmentReportsHeader" data-bs-parent="#reportsAccordion">
+                        <div class="accordion-body">
+                            <a th:href="@{/assessment-reports/assessment}" class="btn btn-outline-warning btn-lg mb-3 w-75">Assessment Report</a>
+                            <a th:href="@{/assessment-reports/student-score}" class="btn btn-outline-warning btn-lg mb-3 w-75">Student Score Report</a>
+                            <a th:href="@{/assessment-reports/exercise}" class="btn btn-outline-warning btn-lg mb-3 w-75">Exercise Report</a>
+                            <a th:href="@{/assessment-reports/exercise-list}" class="btn btn-outline-warning btn-lg mb-3 w-75">Exercise List</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Reports Card -->
+            <div class="col-md-3">
+                <div class="accordion-item shadow border rounded">
+                    <h2 class="accordion-header text-center" id="userReportsHeader">
+                        <button class="btn btn-warning text-uppercase fw-bold text-white mx-auto w-100 py-4" type="button" data-bs-toggle="collapse" data-bs-target="#userReports" aria-expanded="false" aria-controls="userReports">
+                            User Reports
+                        </button>
+                    </h2>
+                    <div id="userReports" class="accordion-collapse collapse" aria-labelledby="userReportsHeader" data-bs-parent="#reportsAccordion">
+                        <div class="accordion-body">
+                            <a th:href="@{/user-reports/user-overview}" class="btn btn-outline-warning btn-lg mb-3 w-100">User Overview</a>
+                            <a th:href="@{/user-reports/user-statistics}" class="btn btn-outline-warning btn-lg mb-3 w-100">User Statistics</a>
+                            <a th:href="@{/user-reports/role}" class="btn btn-outline-warning btn-lg mb-3 w-100">Role</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

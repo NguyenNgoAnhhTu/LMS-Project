@@ -1,0 +1,23 @@
+<div class="container mt-5">
+    <h2 class="text-center">Edit Topic</h2>
+
+    <!-- Display error message if any -->
+    <div th:if="${error}" class="alert alert-danger">
+        <p th:text="${error}"></p>
+    </div>
+
+    <!-- Form to edit the topic -->
+    <form th:action="@{/topics/edit/{id}(id=${topic.topicId})}" method="post">
+        <div class="form-group">
+            <label for="topicName">Topic Name</label>
+            <input type="text" id="topicName" name="topicName" class="form-control" th:value="${topic.topicName}" required autofocus>
+        </div>
+
+        <!-- Buttons to save or cancel -->
+        <div class="d-flex justify-content-center mt-3">
+            <button type="submit" class="btn btn-primary me-2" id="defaultButton">Save Changes</button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='/topics'">Cancel</button>
+        </div>
+    </form>
+</div>
+

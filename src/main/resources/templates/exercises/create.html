@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Add New Exercise</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body onload="toggleTestCaseMethod()">
+
+<div class="container mt-4">
+    <h2 class="text-center">Add New Exercise</h2>
+
+    <!-- Display error if present -->
+    <div th:if="${error}" class="alert alert-danger text-center">
+        <span th:text="${error}"></span>
+    </div>
+
+    <form th:action="@{/exercises/create}" method="post" th:object="${exercise}" id="create-ex-form">
+        <!-- Exercise Title -->
+        <div class="mb-3">
+            <label for="name" class="form-label">Title</label>
+            <input type="text" class="form-control" id="name" th:field="*{name}" placeholder="Enter title" required>
+        </div>
+
+        <!-- Programming Language -->
+        <div class="mb-3">
+            <label for="language" class="form-label">Programming Language</label>
+            <select class="form-select" id="language" th:field="*{language}" required>
+                <option value="">-- Select Language --</option>
+                <option th:each="lang : ${programmingLanguages}" th:value="${lang.id}" th:text="${lang.language}"></option>
+            </select>
+        </div>
+
+        <!-- Exercise Description -->
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" th:field="*{description}" required></textarea>
+        </div>
+
+        <!-- Setup Code -->
+        <div class="mb-3">
+            <label for="setup" class="form-label">Setup Code</label>
+            <textarea class="form-control" id="setup" th:field="*{setup}"></textarea>
+        </div>
+
+        <!-- Difficulty Level -->
+        <div class="mb-3">
+            <label for="level" class="form-label">Difficulty Level</label>
+            <select class="form-select" id="level" th:field="*{level}">
+                <option th:each="lvl : ${T(com.example.exercise.Exercise.Level).values()}" th:value="${lvl}" th:text="${lvl}"></option>
+            </select>
+        </div>
+
+        <!-- Select Test Case Input Method -->
+        <div class="mb-3">
+            <label class="form-label d-block">Select Test Case Input Method</label>
+
+            <div class="form-check">
+                <input class="form-check-input" type="radio" id="jsonOption" name="testCaseMethod" value="json" checked onclick="toggleTestCaseMethod()">
+                <label class="form-check-label" for="jsonOption">Enter as JSON</label>
+            </div>
+
+            <div class="form-check">
+                <input class="form-check-input" type="radio" id="uiOption" name="testCaseMethod" value="ui" onclick="toggleTestCaseMethod()">
+                <label class="form-check-label" for="uiOption">Add Manually</label>
+            </div>
+        </div>
+
+        <!-- JSON Input Method -->
+        <div id="jsonInputDiv">
+            <label for="testCases" class="form-label">Test Cases (JSON Format)</label>
+            <textarea class="form-control" id="testCases" name="testCasesJson" placeholder='[{"input": "1", "expectedOutput": "2"}]'></textarea>
+        </div>
+
+        <!-- Manual UI Input Method -->
+        <div id="uiInputDiv" style="display: none;">
+            <label class="form-label">Test Cases</label>
+
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Input</th>
+                    <th>Expected Output</th>
+<!--                    <th>Action</th>-->
+                </tr>
+                </thead>
+                <tbody id="testCasesContainer">
+                <tr th:each="testCase, stat : ${testCaseFormList.testCasesList}">
+                    <td>
+                        <input type="text" class="form-control"
+                               th:name="|testCaseFormList.testCasesList[${stat.index}].input|"
+                               th:value="${testCase.input}" placeholder="Input" required>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control"
+                               th:name="|testCaseFormList.testCasesList[${stat.index}].expectedOutput|"
+                               th:value="${testCase.expectedOutput}" placeholder="Expected Output" required>
+                    </td>
+                </tr>
+                </tbody>
+
+            </table>
+
+            <!-- "+" button -->
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-success btn-sm" onclick="addTestCase()">+</button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeLastTestCase()">-</button>
+            </div>
+        </div>
+
+
+        <!-- Centered Save Exercise Button -->
+        <div class="d-flex justify-content-center mt-4">
+            <button type="submit" class="btn btn-primary">Save Exercise</button>
+        </div>
+    </form>
+</div>
+
+<!-- JavaScript to handle dynamic UI -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>
+    function toggleTestCaseMethod() {
+        const isJsonSelected = document.getElementById('jsonOption').checked;
+        document.getElementById('jsonInputDiv').style.display = isJsonSelected ? 'block' : 'none';
+        document.getElementById('uiInputDiv').style.display = isJsonSelected ? 'none' : 'block';
+
+        // Enable/disable fields based on selection
+        document.getElementById('testCases').required = isJsonSelected;
+        const manualFields = document.querySelectorAll('input[name^="testCaseFormList.testCasesList["]');
+        manualFields.forEach(field => {
+            field.required = !isJsonSelected;
+            field.disabled = isJsonSelected;
+        });
+
+        // Disable JSON test case field when manual UI is selected
+        document.getElementById('testCases').disabled = !isJsonSelected;
+    }
+    function addTestCase() {
+        let container = document.getElementById('testCasesContainer');
+        let rowCount = container.children.length;
+        let newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td><input type="text" class="form-control" name="testCaseFormList.testCasesList[${rowCount}].input" placeholder="Input" required></td>
+            <td><input type="text" class="form-control" name="testCaseFormList.testCasesList[${rowCount}].expectedOutput" placeholder="Expected Output" required></td>
+            `;
+        container.appendChild(newRow);
+    }
+
+    function removeLastTestCase() {
+        let container = document.getElementById('testCasesContainer');
+        if (container.children.length > 1) { // Prevent removing all test cases
+            container.removeChild(container.lastElementChild);
+        }
+    }
+
+    // JSON Validation
+    document.querySelector('form').addEventListener('submit', function(event) {
+        const isJsonSelected = document.getElementById('jsonOption').checked;
+        if (isJsonSelected) {
+            const testCases = document.getElementById('testCases').value;
+            try {
+                JSON.parse(testCases);
+            } catch (e) {
+                event.preventDefault();
+                alert('Invalid JSON format. Please correct it before submitting.');
+            }
+        }
+    });
+
+    $(document).ready(function () {
+        $("#create-ex-form").submit(function (event) {
+            event.preventDefault(); // Ngăn form submit mặc định
+            let formData = new FormData(this); // Tạo FormData từ form
+
+
+            $.ajax({
+                type: "POST",
+                url: "/exercises/create",
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function (response) {
+                    alert("Exercise created successfully!");
+                    window.location.href = "/exercises"; // Chuyển hướng sau khi tạo
+                },
+                error: function (xhr) {
+                    alert("Error: " + xhr.responseText);
+                }
+            });
+        });
+    });
+
+</script>
+</body>
+</html>

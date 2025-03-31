@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Chuyển Đổi Role</title>
+</head>
+<body>
+<h1>Chuyển đổi Role</h1>
+<form action="/superadmin/switch-role" method="post">
+  <label for="role">Chọn Role:</label>
+  <select id="role" name="newRole">
+    <option th:each="role : ${roles}" th:value="${role}" th:text="${role}"></option>
+  </select>
+  <button type="submit">Chuyển đổi</button>
+</form>
+<hr>
+</body>
+</html>

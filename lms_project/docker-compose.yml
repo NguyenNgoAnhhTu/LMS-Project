@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  lms_app:
+    image: lms2025:latest
+    container_name: lms_app
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "9090:8080"
+    volumes:
+      - ./data/material:/app/material
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://lms_postgres:5432/lmsdb
+      - SPRING_DATASOURCE_USERNAME=lms
+      - SPRING_DATASOURCE_PASSWORD=postgres
+    networks:
+      - lms-network
+    depends_on:
+      - postgres  # Đảm bảo postgres được khởi động trước
+    restart: always
+
+  postgres:
+    image: postgres:16   # Chọn phiên bản PostgreSQL 16
+    container_name: lms_postgres
+    environment:
+      - POSTGRES_DB=lmsdb
+      - POSTGRES_USER=lms
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "15432:5432"
+    volumes:
+      - ./data/postgresql:/var/lib/postgresql/data   # Mount thư mục data vào container PostgresSQL
+    networks:
+      - lms-network
+    restart: always
+  redis:
+    image: redis:latest  
+    container_name: redis
+    ports:
+      - "6379:6379"  
+    networks:
+      - lms-network
+    restart: always
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./data/material:/usr/share/nginx/html/material
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - lms-network
+    depends_on:
+      - lms_app
+    restart: always
+
+networks:
+  lms-network:
+    driver: bridge

@@ -1,0 +1,63 @@
+<div class="flex-grow-1 container mt-5">
+    <!-- Card for Form -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Update Exercise</h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/exercises/edit/{id}(id=${exercise.id})}" th:object="${exercise}" method="post" class="needs-validation" novalidate>
+                <!-- Name -->
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name:</label>
+                    <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="Enter exercise name" required />
+                    <div class="invalid-feedback">Please enter a name.</div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description:</label>
+                    <textarea id="description" th:field="*{description}" class="form-control" rows="4" placeholder="Enter a detailed description" required></textarea>
+                    <div class="invalid-feedback">Please enter a description.</div>
+                </div>
+
+                <!-- Programming Language -->
+                <div class="mb-3">
+                    <label for="language" class="form-label">Programming Language:</label>
+                    <select id="language" th:field="*{language.id}" class="form-select" required>
+                        <option th:each="lang : ${programmingLanguages}" th:value="${lang.id}" th:text="${lang.language}">Select Language</option>
+                    </select>
+                    <div class="invalid-feedback">Please select a programming language.</div>
+                </div>
+
+                <!-- Setup -->
+                <div class="mb-3">
+                    <label for="setup" class="form-label">Setup:</label>
+                    <textarea id="setup" th:field="*{setup}" class="form-control" rows="3" placeholder="Enter any setup instructions"></textarea>
+                </div>
+
+                <!-- Level -->
+                <div class="mb-3">
+                    <label for="level" class="form-label">Difficulty Level:</label>
+                    <select id="level" th:field="*{level}" class="form-select" required>
+                        <option th:value="EASY" th:text="'Easy'"></option>
+                        <option th:value="MEDIUM" th:text="'Medium'"></option>
+                        <option th:value="HARD" th:text="'Hard'"></option>
+                    </select>
+                    <div class="invalid-feedback">Please select a difficulty level.</div>
+                </div>
+
+                <!-- Test Cases -->
+                <div class="mb-3">
+                    <label for="testCases" class="form-label">Test Cases:</label>
+                    <textarea id="testCases" th:field="*{testCases}" class="form-control" rows="5" placeholder="Enter test cases in JSON format"></textarea>
+                </div>
+
+                <!-- Submit and Back Buttons -->
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="#" th:href="@{/exercises}" class="btn btn-secondary ms-2">Back to List</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

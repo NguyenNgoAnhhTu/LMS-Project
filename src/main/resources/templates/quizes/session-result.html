@@ -1,0 +1,101 @@
+<div class="container-fluid py-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <a th:href="@{/quizes/participants/{quizId}(quizId=${quiz.id})}" class="btn btn-light btn-sm me-3">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <h3 class="mb-0 text-dark">Test Session Result</h3>
+            </div>
+            <div class="quiz-info">
+                <span class="badge bg-primary">
+                    <i class="bi bi-book"></i> 
+                    Quiz: <span th:text="${quiz.name}"></span>
+                </span>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <h5 class="card-title">User: <span th:text="${participant.user.username}"></span></h5>
+            <p class="card-text">Score: <span th:text="${practiceResults[0].score}"></span> / 100</p>
+            <p class="card-text">Time Taken: <span th:text="${durationInMinutes + ' minutes'}"></span></p>
+
+            <div class="mt-4">
+                <h3>Detailed Results</h3>
+                <div th:each="question, iterStat : ${quiz.questions}" class="mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="'Question ' + ${iterStat.index + 1}"></h5>
+                            <pre class="p-3 border rounded" style="background-color: #F0F0F0"
+                                 th:utext="${question.questionText}"></pre>
+
+                            <!-- For TEXT type questions -->
+                            <div th:if="${question.questionType.name() == 'TEXT'}" class="mt-3">
+                                <div class="user-answer p-3 border rounded">
+                                    <h6 class="mb-2">Your Answer:</h6>
+                                    <p th:with="answer=${#lists.isEmpty(testSession.answers)} ? null : ${testSession.answers.?[question.id == __${question.id}__].get(0)}"
+                                       th:text="${answer != null ? answer.answerText : 'No answer provided'}"
+                                       class="mb-0"></p>
+                                </div>
+                            </div>
+
+                            <!-- For MCQ & SCQ type questions -->
+                            <div th:unless="${question.questionType.name() == 'TEXT'}">
+                                <ul class="list-group mt-3">
+                                    <li th:each="option : ${question.answerOptions}"
+                                        class="list-group-item"
+                                        th:with="selectedAnswers=${testSession.answers}"
+                                        th:classappend="${option.isCorrect ? 'correct' : ''} + 
+                                                      ${selectedAnswers != null and selectedAnswers.?[question.id == __${question.id}__ and optionId == __${option.id}__].size() > 0 ? 
+                                                      (option.isCorrect ? ' correct' : ' incorrect') : ''}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span th:text="${option.optionText}"></span>
+                                            </div>
+                                            <div>
+                                                <span th:if="${selectedAnswers != null and selectedAnswers.?[question.id == __${question.id}__ and optionId == __${option.id}__].size() > 0}"
+                                                      class="badge bg-primary">Your Answer</span>
+                                                <span th:if="${option.isCorrect}"
+                                                      class="badge bg-success ms-1">Correct</span>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.correct {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.incorrect {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.badge {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+
+pre {
+    white-space: pre-wrap;
+    font-family: inherit;
+}
+
+.list-group-item {
+    transition: all 0.2s ease;
+}
+
+.user-answer {
+    background-color: #f8f9fa;
+}
+</style> 

@@ -1,0 +1,26 @@
+<!-- base.html -->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments :: common_header('Course', null)}">
+</head>
+
+<body>
+<!-- Wrapper for the whole page -->
+<div class="d-flex flex-column min-vh-100">
+    <!-- Sticky Header -->
+    <div th:replace="~{fragments :: header}" class="sticky-top"></div> <!-- Header always on top -->
+
+    <!--   Body Content -->
+    <div class="flex-grow-1" th:insert="course/list_body.html :: content"></div> <!-- Page-specific content -->
+
+    <!-- Footer -->
+    <div th:replace="~{fragments :: footer}" class="mt-auto"></div> <!-- Footer stays at the bottom -->
+</div>
+
+<div th:replace="~{fragments :: scripts}" class="mt-auto"></div>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: common_header(~{::title}, ~{::link})}">
+    <title>Edit Role</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h2 class="text-center">Edit Role</h2>
+
+    <!-- Display error message if any -->
+    <div th:if="${error}" class="alert alert-danger">
+        <p th:text="${error}"></p>
+    </div>
+
+    <!-- Form to edit the role -->
+    <form th:action="@{/roles/edit/{id}(id=${role.id})}" method="post">
+        <div class="form-group">
+            <label for="name">Role Name</label>
+            <input type="text" id="name" name="name" class="form-control" th:value="${role.name}" required autofocus>
+        </div>
+
+        <!-- Buttons to save or cancel -->
+        <div class="d-flex justify-content-center mt-3">
+            <button type="submit" class="btn btn-success me-2" id="defaultButton">Save Changes</button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='/roles'">Cancel</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

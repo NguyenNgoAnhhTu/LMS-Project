@@ -1,0 +1,163 @@
+
+<style>
+  /* Smooth scrolling */
+  html, body {
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+  }
+
+  .container-fluid {
+      max-width: 100vw; /* Giữ nội dung trong màn hình */
+      overflow-x: hidden; /* Tránh tràn ngang */
+  }
+
+
+  .btn-outline-primary {
+      flex: 1 1 auto;  /* Chia đều khoảng trống */
+      min-width: 80px; /* Đảm bảo không quá nhỏ */
+      text-align: center;
+  }
+
+
+  ul {
+      list-style: none; /* Loại bỏ dấu chấm */
+      padding-left: 0;  /* Xóa khoảng cách thụt lề mặc định */
+  }
+
+
+  .pre-text {
+      font-family: monospace; /* Giữ định dạng code */
+      white-space: pre-wrap;  /* Giữ nguyên xuống dòng và khoảng trắng */
+      display: inline-block;  /* Không bị xuống dòng */
+      margin: 0;
+  }
+
+  .align-self-start {
+      align-self: start;  /* Đảm bảo radio nằm trên cùng */
+  }
+
+  .row {
+      flex: 1;
+      display: flex;
+  }
+
+  .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+  }
+
+  .sidebar {
+      height: 100%;
+      width: 280px;
+      overflow-y: auto;
+  }
+
+  .question-btn {
+      width: 30px; /* Độ rộng cố định */
+      height: 30px; /* Độ cao cố định */
+      aspect-ratio: 1/1; /* Đảm bảo hình vuông */
+      display: flex; /* Căn giữa nội dung */
+      align-items: center;
+      justify-content: center;
+      font-size: 16px; /* Kích thước chữ */
+      padding: 0; /* Loại bỏ padding thừa */
+      flex-grow: 0; /* Không mở rộng */
+      flex-basis: 50px; /* Đảm bảo cùng kích thước */
+  }
+
+
+  .wrong {
+      border-color: #F60000;
+      color: red;
+  }
+
+  .incorrect.selected span.text-danger {
+      display: inline;
+  }
+
+  .incorrect span.text-danger {
+      display: none;
+  }
+
+  .correct.selected span.text-success {
+      display: inline;
+  }
+
+  .incorrect span.text-success {
+      display: none;
+  }
+
+  .highlight-row {
+      background-color: #ffcccc; /* Màu đỏ nhạt hơn */
+  }
+
+</style>
+
+<!-- Main Content -->
+<div class="container-fluid px-5 mt-3" style="flex: 1;">
+  <button class="btn btn-primary d-md-none" onclick="toggleSidebar()"
+          style="position: fixed; bottom: 30px; right: 10px; z-index: 1050; width: 100px; height: 50px">
+    Review
+  </button>
+
+  <div class="row">
+    <h1 class="text-center py-2">Review Quiz</h1>
+    <!-- Main Content (Left) -->
+    <main class="col-md-9 ps-2 pe-4 d-flex flex-column main-content">
+      <h3 class="mt-2 mb-4">Questions</h3>
+      <div class="border rounded py-3 px-4" style="max-height: 80vh; overflow-y: auto;">
+        <!--  Question -->
+        <div class="card mb-4 shadow-sm" th:each="question : ${Questions}"
+             th:id="|question_${question.questionNo}|">
+          <div class="card-body">
+            <!--Question-->
+            <div class="d-flex align-items-start">
+              <div>
+                <h5 class="me-2 question-number">
+                  <strong> Question <span th:text="${question.questionNo}"></span></strong>
+                </h5>
+                <p class="ps-3"><pre th:text="${question.questionText}"></pre></p>
+              </div>
+            </div>
+
+            <!-- Answer Options -->
+            <ul class="list-group list-unstyled" th:each="answerOption : ${question.answerOptions}">
+              <li class="list-group-item d-flex align-items-start">
+                <input type="radio" name="answers[2]" value="1" disabled class="me-2 align-self-start">
+                <pre class="pre-text mb-0 ms-2" th:text="${answerOption.optionText}"></pre>
+              </li>
+            </ul>
+
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Sidebar (Right) -->
+    <nav id="sidebar" class="col-md-3 d-none d-md-block sidebar px-3">
+      <div class="mt-5">
+        <div class="row text-center">
+          <div class="col-12 mb-2 d-flex flex-wrap justify-content-start gap-2 pt-4">
+            <button type="button" class="btn btn-outline-primary question-btn"
+                    th:each="question : ${Questions}"
+                    th:attr="data-id=|question_${question.questionNo}|"
+                    onclick="scrollToQuestion(this)">
+              <span th:text="${question.questionNo}"></span>
+            </button>
+          </div>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+          <a href="/quizes" class="btn btn-primary btn-md">Back to List</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+</div>
+
+
+

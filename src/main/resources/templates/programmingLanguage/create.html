@@ -1,0 +1,25 @@
+<div class="flex-grow-1 container mt-5">
+    <!-- Card for Form -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Create </h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/programming_languages/create}" th:object="${programmingLanguage}" method="post" class="needs-validation" novalidate>
+                <div class="mb-3">
+                    <label for="programmingLanguageName" class="form-label">Programming Language name</label>
+                    <input type="text" id="programmingLanguageName" th:field="*{language}" class="form-control" placeholder="Enter programmingLanguage name" required>
+                    <div class="invalid-feedback">
+                        Programming Language name is required.
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="#" th:href="@{/programming_languages}" class="btn btn-secondary ms-2">Back to List</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

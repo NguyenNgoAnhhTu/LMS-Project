@@ -1,0 +1,114 @@
+
+<div class="container mt-4">
+    <!-- Assessment Details Section -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="mb-0" th:text="${assessment.title}"></h2>
+            <div>
+                <a th:href="@{/assessments/edit/{id}(id=${assessment.id})}" class="btn btn-outline-secondary">Edit</a>
+                <a th:href="@{/assessments}" class="btn btn-secondary ml-2">Back to Assessments</a>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-md-6">
+                    <p>
+                        <strong>Course:</strong> <span th:text="${assessment.course.name}"></span><br>
+                        <strong>Assessment Type:</strong> <span th:text="${assessment.assessmentType.name}"></span>
+                    </p>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-6">
+                    <p>
+                        <strong>Due Date:</strong> <span th:text="${assessment.timeLimit}"></span><br>
+                        <strong>Total Score:</strong> <span th:text="${assessment.totalScore}"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Two-Column Layout for Exercises and Questions -->
+    <div class="row mb-4">
+        <!-- Exercises Section -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Exercises</h3>
+                </div>
+                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                    <ul class="list-group">
+                        <li class="list-group-item" th:each="exercise : ${assessment.exercises}">
+                            <a th:href="@{/exercises/detail/{exerciseId}(exerciseId=${exercise.id})}" target="_blank" th:text="${exercise.title}"></a>
+                        </li>
+                        <li class="list-group-item text-muted" th:if="${#lists.isEmpty(assessment.exercises)}">No exercises assigned.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions Section -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Multiple Choice</h3>
+                </div>
+                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                    <ul class="list-group">
+                        <li class="list-group-item" th:each="question, iterStat : ${assessment.questions}">
+                            <span th:text="${iterStat.count}"></span>. <span th:utext="${question.questionText}"></span>
+                        </li>
+                        <li class="list-group-item text-muted" th:if="${#lists.isEmpty(assessment.questions)}">No questions assigned.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invited Candidates Section -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Invited Candidates</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-sm table-bordered">
+                <thead class="thead-light">
+                <tr>
+                    <th>#</th>
+                    <th>Candidate</th>
+                    <th>Email</th>
+                    <th>Invitation Date</th>
+                    <th>Expiration Date</th>
+                    <th>Quiz Score</th>
+                    <th>Assignment Score</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="attempt, iterStat : ${registeredAttempts}">
+                    <td th:text="${iterStat.count}"></td>
+                    <td>
+                        <span th:if="${attempt.email in invitedCandidatesEmails}" th:text="${attempt.email}"></span>
+                        <span th:if="${!(attempt.email in invitedCandidatesEmails)}">Not Invited</span>
+                    </td>
+                    <td th:text="${attempt.email}"></td>
+                    <td th:each="candidate : ${invitedCandidates}" th:if="${candidate.email == attempt.email}" th:text="${candidate.invitationDate}"></td>
+                    <td th:each="candidate : ${invitedCandidates}" th:if="${candidate.email == attempt.email}" th:text="${candidate.expirationDate}"></td>
+                    <td th:text="${#numbers.formatDecimal(attempt.quizScore, 0)}"></td>
+                    <td th:each="score : ${finalScores}" th:if="${attempt.email == score.key}" th:text="${score.value}"></td>
+                    <td>
+                        <a th:href="@{/assessments/report/{id}/{attemptId}/{email}(id=${assessment.id}, attemptId=${attempt.id}, email=${attempt.email})}">View</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(registeredAttempts)}">
+                    <td colspan="8" class="text-center text-muted">No attempts yet.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

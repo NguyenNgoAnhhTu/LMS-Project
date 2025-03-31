@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversion Results</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-refresh {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-refresh:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+<div class="container mt-5 flex-grow-1">
+
+    <!-- Header -->
+    <div th:replace="~{fragments :: header}" class="sticky-top"></div>
+
+    <h1 class="text-center text-success">Success!</h1>
+    <p class="text-center">Your Excel files have been successfully converted to JSON. You can download them individually or as a ZIP file.</p>
+
+    <!-- Log error -->
+    <div th:if="${errorMap != null and !#lists.isEmpty(errorMap)}" class="mb-4">
+        <h4 class="text-danger">Conversion Errors:</h4>
+        <ul class="list-group">
+            <li class="list-group-item list-group-item-danger" th:each="errEntry : ${errorMap}">
+                <strong th:text="${errEntry.key}"></strong>
+                <span th:text="${errEntry.value}"></span>
+            </li>
+        </ul>
+    </div>
+
+    <!-- File List -->
+    <div th:if="${jsonData != null and #strings.trim(jsonData) != '{}'}">
+        <h4 class="text-success">Conversion Success:</h4>
+        <ul class="list-group mb-4" id="fileList" th:data-json="${jsonData}">
+        </ul>
+    </div>
+
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-center gap-2">
+        <button th:if="${jsonData != null and #strings.trim(jsonData) != '{}'}" class="btn btn-primary" onclick="downloadAllAsZip()">Download All as ZIP</button>
+        <button class="btn btn-refresh" onclick="window.location.href='/tools'">Convert More</button>
+    </div>
+
+</div>
+
+<!-- Footer -->
+<footer th:replace="~{fragments :: footer}" class="bg-light py-3 text-center mt-auto">
+    <p>&copy; 2025 Your Company. All Rights Reserved.</p>
+</footer>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const fileList = document.getElementById('fileList');
+        const rawJsonData = fileList.getAttribute('data-json');
+
+        let parsedData;
+
+        try {
+            parsedData = JSON.parse(rawJsonData);
+        } catch (error) {
+            console.error('Error parsing JSON:', error);
+            return;
+        }
+
+        Object.entries(parsedData).forEach(([fileName, jsonString]) => {
+            try {
+                let jsonObj;
+                try {
+                    jsonObj = JSON.parse(jsonString);
+                } catch (error) {
+                    console.error("Error parsing JSON:", error);
+                    jsonObj = null;
+                }
+
+                let questionCount = 0;
+                if (jsonObj && typeof jsonObj.total_questions === 'number') questionCount = jsonObj.total_questions;
+
+                const listItem = document.createElement('li');
+                listItem.className = 'list-group-item';
+                listItem.innerHTML = `
+            <div>
+                <span>${fileName}</span>
+                <small class="text-muted">(Questions: ${questionCount})</small>
+            </div>
+            <button type="button"
+                    class="btn btn-outline-primary"
+                    data-file-name="${fileName}"
+                    data-json-string="${encodeURIComponent(jsonString)}">
+                Download
+            </button>
+        `;
+
+                fileList.appendChild(listItem);
+            } catch (error) {
+                console.error(`Error processing file: ${fileName}`, error);
+            }
+        });
+
+
+        fileList.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON' && e.target.classList.contains('btn-outline-primary')) {
+                const fileName = e.target.getAttribute('data-file-name');
+                const encodedJsonString = e.target.getAttribute('data-json-string');
+
+                const dataJsonString = decodeURIComponent(encodedJsonString);
+
+                downloadFile(fileName, dataJsonString);
+            }
+        });
+    });
+
+    function downloadFile(fileName, dataJsonString) {
+        try {
+            const blob = new Blob([dataJsonString], { type: 'application/json' });
+
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName + ".json";
+
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error(`Error downloading ${fileName}:`, err);
+        }
+    }
+
+    // Hàm tải tất cả file thành ZIP
+    function downloadAllAsZip() {
+        const fileList = document.getElementById('fileList');
+        const rawJsonData = fileList?.getAttribute('data-json') || "";
+
+        if (!rawJsonData) {
+            alert("No data found to create ZIP.");
+            return;
+        }
+
+        let base64Map = {};
+        try {
+            base64Map = JSON.parse(rawJsonData);
+        } catch (error) {
+            console.error("Error parsing JSON for ZIP:", error);
+            return;
+        }
+
+        if (!Object.keys(base64Map).length) {
+            alert("No valid JSON files to download.");
+            return;
+        }
+
+        const zip = new JSZip();
+
+        for (const [fileName, base64Data] of Object.entries(base64Map)) {
+            try {
+                const jsonContent = /^[A-Za-z0-9+/=]+$/.test(base64Data)
+                    ? atob(base64Data)
+                    : base64Data;
+
+                zip.file(`${fileName}.json`, jsonContent);
+            } catch (error) {
+                console.error(`Failed to add ${fileName} to ZIP:`, error);
+            }
+        }
+
+        if (Object.keys(zip.files).length === 0) {
+            alert("No valid files were added to the ZIP.");
+            return;
+        }
+
+        zip.generateAsync({ type: "blob" }).then((content) => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(content);
+            a.download = "converted_files.zip";
+            a.click();
+            URL.revokeObjectURL(a.href);
+        });
+    }
+</script>
+
+<!-- Include JSZip Library -->
+<script src="https://cdn.jsdelivr.net/npm/jszip/dist/jszip.min.js"></script>
+</body>
+</html>

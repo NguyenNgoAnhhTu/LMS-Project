@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Taking Quiz</title>
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+  <style>
+    /* Smooth scrolling */
+    html {
+        scroll-behavior: smooth;
+    }
+
+        .sidebar {
+            position: fixed;
+            right: 0;
+            height: 90%;
+            overflow-y: auto;
+            margin-top: 14px;
+            width: 25%;
+        }
+
+        .main-content {
+            margin-right: 25%;
+        }
+
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                left: -250px;
+                bottom: 10px;
+                width: auto;
+                background: white;
+                transition: left 0.3s ease-in-out;
+                box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+                z-index: 1049;
+            }
+
+            #sidebar.active {
+                left: 0;
+            }
+        }
+
+        .answered {
+            background-color: #d4edda;
+        }
+
+    #time-warning-message {
+            display: none; /* Hidden by default */
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1051;
+        }
+  </style>
+</head>
+<body>
+<!-- Navbar -->
+<div th:replace="~{fragments :: header}" class="sticky-top"></div>
+
+<!-- Main Content -->
+<div class="container-fluid">
+  <button class="btn btn-primary d-md-none" onclick="toggleSidebar()"
+          style="position: fixed; bottom: 30px; right: 10px; z-index: 1050; width: 100px; height: 50px">
+    Review
+  </button>
+
+  <div class="row" style="height: 100%;">
+    <!-- Sidebar (Right) -->
+    <nav id="sidebar" class="sidebar d-none d-md-block">
+      <div>
+        <div class="card text-bg-light">
+          <!-- Timer -->
+          <div class="card-header text-center">
+            <strong>Time Left: <span id="time_display"></span></strong>
+          </div>
+        </div>
+
+        <!-- Question List -->
+        <!--        <div class="card-footer" th:if="${questions != null and not #lists.isEmpty(questions)}">-->
+        <!--          <h5 class="text-center">Questions</h5>-->
+        <!--          <div class="row text-center">-->
+        <!--            <div th:each="question, iterStat : ${questions}" class="col-3 col-md-3 col-xl-2 mb-2">-->
+        <!--              <button type="button" class="btn btn-outline-primary" style="min-width: 40px"-->
+        <!--                      th:attr="onclick='document.getElementById(\'question_' + ${question.id} + '\').scrollIntoView({behavior: \'smooth\'})'">-->
+        <!--                <span th:text="${iterStat.count}"></span>-->
+        <!--              </button>-->
+        <!--            </div>-->
+        <!--          </div>-->
+        <!--        </div>-->
+
+        <div class="card-footer" th:if="${questions != null and not #lists.isEmpty(questions)}">
+          <h5 class="text-center">Questions</h5>
+          <div class="container">
+            <div class="row">
+              <div th:each="question, iterStat : ${questions}" class="col-2 mb-2 text-center">
+                <button type="button" class="btn btn-outline-primary w-100"
+                        th:attr="onclick='document.getElementById(\'question_' + ${question.id} + '\').scrollIntoView({behavior: \'smooth\'})'">
+                  <span th:text="${iterStat.count}"></span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- Submit Button -->
+        <button type="submit" form="quiz-form" class="btn btn-warning d-flex justify-content-center align-items-center"
+                style="height: 50px; width: 100px; margin-bottom: 20px">
+          Submit
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Content (Left) -->
+    <main class="col-md-9 ms-sm-auto px-2 d-flex flex-column main-content">
+
+      <!-- Back Button -->
+      <div class="mt-3">
+        <button class="btn btn-danger d-flex align-items-center" onclick="confirmBack()">
+          <i class="bi bi-arrow-left me-2"></i> Back
+        </button>
+      </div>
+
+      <form id="quiz-form" th:if="${quiz != null}" th:action="@{'/quizes/apply/'+${quiz.id}+'/submit'}" method="post">
+        <!-- Kiểm tra danh sách câu hỏi trước khi lặp -->
+        <th:block th:if="${questions != null and not #lists.isEmpty(questions)}">
+          <th:block th:each="question : ${questions}">
+            <input type="hidden" name="questionIds" th:value="${question.id}">
+          </th:block>
+        </th:block>
+
+        <input type="hidden" name="elapsedTime" id="elapsedTime">
+
+        <div class="mb-4">
+          <h3 class="mt-2">Questions</h3>
+          <div class="border rounded p-3" style="max-height: 80vh; overflow-y: auto;">
+            <!-- Kiểm tra danh sách câu hỏi trước khi lặp -->
+            <th:block th:if="${questions != null and not #lists.isEmpty(questions)}">
+              <div th:each="question, iterStat : ${questions}" class="card mb-4 shadow-sm" th:id="'question_' + ${question.id}">
+                <div class="card-body">
+                  <!-- Hiển thị tiêu đề câu hỏi -->
+                  <h5><strong th:text="'Question ' + ${iterStat.index + 1}"></strong></h5>
+
+                  <!-- Hiển thị nội dung câu hỏi -->
+                  <pre class="p-3 border rounded" style="background-color: #F0F0F0"
+                       th:utext="${question.questionText != null ? question.questionText : 'No question text available'}"></pre>
+
+                  <!-- Xử lý câu hỏi trắc nghiệm -->
+                  <!-- Câu hỏi MCQ -->
+                  <ul class="list-group mt-3" th:if="${question.questionType.toString() == 'MCQ'}">
+                    <th:block th:if="${question.answerOptions != null and not #lists.isEmpty(question.answerOptions)}">
+                      <li th:each="option : ${question.answerOptions}" class="list-group-item">
+                        <label>
+
+                          <input type="checkbox" th:name="|answers[${question.id}]|" th:value="${option.id}">
+
+                          <span th:text="${option.optionText}"></span>
+                        </label>
+                      </li>
+                    </th:block>
+                  </ul>
+
+                  <!-- Câu hỏi SCQ -->
+                  <ul class="list-group mt-3" th:if="${question.questionType.toString() == 'SCQ'}">
+                    <th:block th:if="${question.answerOptions != null and not #lists.isEmpty(question.answerOptions)}">
+                      <li th:each="option : ${question.answerOptions}" class="list-group-item">
+                        <label>
+                          <input type="radio" th:name="|answers[${question.id}]|" th:value="${option.id}">
+                          <span th:text="${option.optionText}"></span>
+                        </label>
+                      </li>
+                    </th:block>
+                  </ul>
+
+
+                  <!-- Xử lý câu hỏi tự luận -->
+                  <div class="mt-3" th:if="${question.questionType.toString() == 'TEXT'}">
+                    <textarea class="form-control" rows="3" th:name="|answers[${question.id}]|" placeholder="Nhập câu trả lời..."></textarea>
+                  </div>
+                </div>
+              </div>
+            </th:block>
+          </div>
+        </div>
+      </form>
+    </main>
+
+  </div>
+</div>
+
+<!-- Timer Script -->
+<script th:inline="javascript">
+var durationInMinutes = /*[[${timeLimit != null ? timeLimit : 60}]]*/ 60; // Mặc định 60 nếu null
+  var durationInSeconds = durationInMinutes * 60;
+
+  function updateTime() {
+        var hours = Math.floor(durationInSeconds / 3600);
+        var minutes = Math.floor((durationInSeconds % 3600) / 60);
+        var seconds = durationInSeconds % 60;
+        var timeFormatted = hours.toString().padStart(2, '0') + ':' +
+            minutes.toString().padStart(2, '0') + ':' +
+            seconds.toString().padStart(2, '0');
+
+        var timeDisplay = document.getElementById('time_display');
+        if (timeDisplay) {
+            timeDisplay.textContent = timeFormatted;
+        }
+
+        var warningMessage = document.getElementById('time-warning-message');
+        if (warningMessage) {
+            if (durationInSeconds <= 300 && durationInSeconds > 0) { // 5 phút cuối
+                warningMessage.style.display = 'block';
+                timeDisplay.style.color = durationInSeconds % 2 === 0 ? "red" : "black";
+            } else {
+                warningMessage.style.display = 'none';
+                timeDisplay.style.color = '';
+            }
+        }
+
+        if (durationInSeconds > 0) {
+            durationInSeconds--;
+        } else {
+            clearInterval(timerInterval);
+            document.getElementById("elapsedTime").value = durationInMinutes * 60;
+            document.getElementById("quiz-form").submit();
+        }
+    }
+
+  document.addEventListener("DOMContentLoaded", function () {
+      var quizForm = document.getElementById("quiz-form");
+      if (quizForm) {
+          quizForm.addEventListener("submit", function () {
+              document.getElementById("elapsedTime").value = (durationInMinutes * 60) - durationInSeconds;
+          });
+      }
+
+      var timerInterval = setInterval(updateTime, 1000);
+      updateTime();
+  });
+</script>
+
+<!-- Sidebar Toggle Script -->
+<script>
+  function toggleSidebar() {
+      var sidebar = document.getElementById("sidebar");
+      sidebar.classList.toggle("active");
+      if (sidebar.classList.contains("active")) {
+          sidebar.classList.remove("d-none");
+      } else {
+          setTimeout(() => sidebar.classList.add("d-none"), 300);
+      }
+  }
+</script>
+
+<script>
+  function confirmBack() {
+      if (confirm("Are you sure you want to go back? Your progress may be lost.")) {
+          window.location.href = "/quizes";
+      }
+  }
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var quizForm = document.getElementById("quiz-form");
+
+    if (quizForm) {
+        quizForm.addEventListener("submit", function (event) {
+            var questions = document.querySelectorAll("[id^='question_']"); // Lấy tất cả câu hỏi
+            var unansweredQuestions = [];
+
+            questions.forEach(function (question, index) {
+                var questionId = question.id.split("_")[1]; // Lấy ID câu hỏi
+
+                // Kiểm tra nếu câu hỏi là dạng TEXT
+                var textArea = document.querySelector("textarea[name='answers[" + questionId + "]']");
+                if (textArea) {
+                    return; // Nếu là TEXT thì bỏ qua kiểm tra
+                }
+
+                var options = document.querySelectorAll("input[name='answers[" + questionId + "]']:checked");
+
+                // Xóa cảnh báo trước đó
+                question.style.border = "";
+
+                if (options.length === 0) {
+                    unansweredQuestions.push("Question " + (index + 1));
+                    question.style.border = "2px solid red"; // Đánh dấu lỗi bằng viền đỏ
+                }
+            });
+
+            if (unansweredQuestions.length > 0) {
+                event.preventDefault(); // Ngăn chặn submit
+                alert("You haven't selected an answer for the following questions:\n" + unansweredQuestions.join(", "));
+            }
+        });
+    }
+});
+</script>
+
+</body>
+</html>

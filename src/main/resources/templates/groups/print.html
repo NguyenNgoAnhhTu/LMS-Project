@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Groups</title>
+    <link rel="stylesheet" href="/css/print.css">
+</head>
+<body>
+<h1>Group List</h1>
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th class="text-center">#</th>
+        <th>Name</th>
+        <th>Department</th>
+        <th>Requesting Department</th>
+        <th>Courses</th>
+        <th>Created At</th>
+        <th>Created By</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Loop through groups and display their details -->
+    <tr th:each="group, iterStat : ${groups}">
+        <td class="text-center" th:text="${iterStat.index + 1}"></td> <!-- Start numbering from 1 -->
+        <td th:text="${group.name}"></td>
+        <td th:text="${group.department != null ? group.department.name : 'N/A'}"></td>
+        <td th:text="${group.requestingDepartment != null ? group.requestingDepartment.name : 'N/A'}"></td>
+        <td>
+            <ul>
+                <li th:each="course : ${group.courses}" th:text="${course.name}"></li>
+            </ul>
+        </td>
+        <td th:text="${#dates.format(group.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+        <td th:text="${group.createdBy != null ? group.createdBy.username : 'N/A'}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    // Automatically trigger the browser's print dialog
+    window.onload = function() {
+        window.print();
+    };
+</script>
+</body>
+</html>

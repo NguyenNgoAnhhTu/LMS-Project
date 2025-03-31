@@ -1,0 +1,33 @@
+<div class=" flex-grow-1 container mt-5" th:fragment="content">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Edit Module Group</h3>
+        </div>
+        <div class="card-body">
+            <!-- Display error message if any -->
+            <div th:if="${error}" class="alert alert-danger">
+                <p th:text="${error}"></p>
+            </div>
+
+            <!-- Form to edit the role -->
+            <form th:action="@{/module-groups/edit/{id}(id=${moduleGroup.id})}" method="post">
+                <div class="form-group mb-3">
+                    <label for="name" class="form-label">Module group name</label>
+                    <input type="text" id="name" name="name" class="form-control" th:value="${moduleGroup.name}"
+                           required autofocus>
+                    <div class="invalid-feedback">
+                        Module Group name is required.
+                    </div>
+                </div>
+
+                <!-- Buttons to save or cancel -->
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary me-2" id="defaultButton">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='/module-groups'">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

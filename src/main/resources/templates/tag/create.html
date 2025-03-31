@@ -1,0 +1,47 @@
+
+
+<!-- Body Content -->
+<div class="flex-grow-1 container mt-5">
+    <!-- Card for Form -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Create Tag</h3>
+        </div>
+        <div class="card-body">
+            <!-- Display success or error message -->
+            <div th:if="${error}" class="alert alert-danger">
+                <span th:text="${error}"></span>
+            </div>
+            <div th:if="${success}" class="alert alert-success">
+                <span th:text="${success}"></span>
+            </div>
+            <form th:action="@{/tags/create}" th:object="${tag}" method="post" class="needs-validation" novalidate>
+                <!-- Tag Name Field -->
+                <div class="mb-3">
+                    <label for="tagName" class="form-label">Tag Name</label>
+                    <input type="text" id="tagName" th:field="*{tagName}" class="form-control" placeholder="Enter tag name" required>
+                    <div class="invalid-feedback">
+                        Tag name is required.
+                    </div>
+                </div>
+
+                <!--  Topic Field (Dropdown) -->
+                <div class="mb-3">
+                    <label for="courseTopic" class="form-label">Course Topic</label>
+                    <select id="courseTopic" th:field="*{topic}" class="form-select" required>
+                        <option th:each="topic : ${topics}" th:value="${topic.topicId}" th:text="${topic.topicName}"></option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Topic is required.
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="#" th:href="@{/tags}" class="btn btn-secondary ms-2">Back to List</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

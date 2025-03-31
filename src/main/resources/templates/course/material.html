@@ -1,0 +1,18 @@
+<div class="row">
+    <div class="col-8">
+        <h1 class="text-center">Materials</h1>
+        <div class="mx-auto" id="pdf-container" th:attr="data-pdfUrl=${material}" style="height: 600px; overflow-y: auto; border: 1px solid #000; width: fit-content"></div>
+    </div>
+    <div class="col-3">
+        <h1 class="text-center">Upload PDF File</h1>
+        <form th:action="@{/materials/upload}" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="formFile" class="form-label">Upload material</label>
+                <input class="form-control" type="file" id="formFile" name="file" accept="application/pdf" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </form>
+    </div>
+</div>
+

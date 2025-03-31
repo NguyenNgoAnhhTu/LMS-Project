@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tools Page</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+
+  </style>
+</head>
+<body>
+<!-- Wrapper for the whole page -->
+<div class="d-flex flex-column min-vh-100">
+
+  <!-- Header -->
+  <div th:replace="~{fragments :: header}" class="sticky-top"></div>
+
+  <!-- Main Content -->
+  <div class="flex-grow-1 container mt-5">
+
+  </div>
+
+  <!-- Footer -->
+  <div th:replace="~{fragments :: footer}" class="mt-auto"></div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Variables
+  const fileUpload = document.querySelector('#fileUpload');
+  const fileCountSpan = document.querySelector('#fileCount');
+  const fileList = document.querySelector('#fileList');
+  const convertButton = document.querySelector('.btn-convert');
+  const responseMessage = document.querySelector('#responseMessage');
+  let selectedFiles = []; // Array to store selected files
+
+  // Restore previous file list from localStorage
+  if (localStorage.getItem('uploadedFiles')) {
+    selectedFiles = JSON.parse(localStorage.getItem('uploadedFiles'));
+    selectedFiles.forEach(file => addFileToList(file.name));
+    fileCountSpan.textContent = selectedFiles.length;
+  }
+
+  // Clear localStorage when page reloads
+  window.addEventListener('beforeunload', () => localStorage.removeItem('uploadedFiles'));
+
+  // Handle Browse Files button click
+  document.querySelector('.btn-browse').addEventListener('click', (event) => {
+    event.preventDefault();
+    fileUpload.click();
+  });
+
+  // Handle file input change
+  fileUpload.addEventListener('change', function () {
+    const newFiles = Array.from(fileUpload.files).filter(file =>
+            !selectedFiles.some(selected => selected.name === file.name && selected.lastModified === file.lastModified)
+    );
+
+    selectedFiles = [...selectedFiles, ...newFiles];
+
+    // Update the file list and count
+    newFiles.forEach(file => addFileToList(file.name));
+    fileCountSpan.textContent = selectedFiles.length;
+
+    // Save to localStorage
+    localStorage.setItem('uploadedFiles', JSON.stringify(selectedFiles));
+  });
+
+  // Add file to the list DOM
+  function addFileToList(fileName) {
+    const listItem = document.createElement('li');
+    listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+
+    // File details
+    listItem.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-file-earmark-excel file-icon"></i>
+                <span>${fileName}</span>
+            </div>
+            <span class="remove-file">✕</span>
+        `;
+
+    // Add remove event
+    listItem.querySelector('.remove-file').addEventListener('click', () => {
+      // Remove file from selectedFiles
+      selectedFiles = selectedFiles.filter(file => file.name !== fileName);
+
+      // Update file list and count
+      listItem.remove();
+      fileCountSpan.textContent = selectedFiles.length;
+
+      // Save to localStorage
+      localStorage.setItem('uploadedFiles', JSON.stringify(selectedFiles));
+    });
+
+    fileList.appendChild(listItem);
+  }
+
+  // Handle Convert Button click
+  convertButton.addEventListener('click', (event) => {
+    if (selectedFiles.length === 0) {
+      event.preventDefault(); // Prevent form submission
+      responseMessage.textContent = 'Please upload at least one file before converting.';
+      responseMessage.classList.add('text-danger');
+      return;
+    }
+
+    responseMessage.textContent = '';
+    responseMessage.classList.remove('text-danger');
+
+    // Sync selectedFiles to fileUpload.files
+    const dataTransfer = new DataTransfer();
+    selectedFiles.forEach(file => dataTransfer.items.add(file));
+    fileUpload.files = dataTransfer.files;
+  });
+</script>
+
+</body>
+</html>

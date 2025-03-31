@@ -1,0 +1,696 @@
+<head>
+    <style>
+        html, body {
+            overflow: hidden;
+        }
+    </style>
+    <!-- Thêm các script và CSS của Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<div class="container-fluid">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0 text-center">Edit Quiz</h3>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/quizes/edit/{id}(id=${quiz.id})}" th:object="${quiz}" method="post" class="needs-validation" novalidate>
+
+                <!-- Nhóm thông tin chung -->
+                <h5 class="text-primary">Quiz Information</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-1">
+                        <label for="quizName" class="form-label fw-bold">Quiz Name</label>
+                        <input type="text" id="quizName" th:field="*{name}" class="form-control" placeholder="Enter quiz name" required>
+                        <div class="invalid-feedback">Quiz name is required.</div>
+                    </div>
+                    <div class="col-md-6 mb-1">
+                        <label for="quizDescription" class="form-label fw-bold">Description</label>
+                        <textarea id="quizDescription" th:field="*{description}" class="form-control" placeholder="Enter quiz description" rows="3" required></textarea>
+                        <div class="invalid-feedback">Quiz description is required.</div>
+                    </div>
+                </div>
+
+                <!-- Nhóm thời gian -->
+                <h5 class="text-primary mt-4">Schedule</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-1">
+                        <label for="startTime" class="form-label fw-bold">Start Time</label>
+                        <input type="datetime-local" id="startTime"
+                               th:value="${#temporals.format(quiz.startTime, 'yyyy-MM-dd''T''HH:mm')}"
+                               name="startTime" class="form-control" required
+                               min="">
+                        <div class="invalid-feedback">Start time is required and cannot be in the past.</div>
+                    </div>
+                    <div class="col-md-6 mb-1">
+                        <label for="endTime" class="form-label fw-bold">End Time</label>
+                        <input type="datetime-local" id="endTime"
+                               th:value="${#temporals.format(quiz.endTime, 'yyyy-MM-dd''T''HH:mm')}"
+                               name="endTime" class="form-control" required
+                               min="">
+                        <div class="invalid-feedback">End time must be after start time.</div>
+                    </div>
+                </div>
+
+                <!-- Nhóm cài đặt Quiz -->
+                <h5 class="text-primary mt-4">Quiz Settings</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-1">
+                        <label for="course" class="form-label fw-bold">Course</label>
+                        <select id="course" th:field="*{course}" class="form-select" required>
+                            <option value="" disabled>-- Select a Course --</option>
+                            <option th:each="course : ${courses}" th:value="${course.getId()}" th:text="${course.getName()}"></option>
+                        </select>
+                        <div class="invalid-feedback">Course is required.</div>
+                    </div>
+                    <div class="col-md-6 mb-1">
+                        <label for="attemptLimit" class="form-label fw-bold">Attempt Limit</label>
+                        <input type="number" id="attemptLimit" th:field="*{attemptLimit}" class="form-control" placeholder="Enter attempt limit" min="1" required>
+                        <div class="invalid-feedback">Attempt limit is required and must be at least 1.</div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-1">
+                        <label for="quizType" class="form-label fw-bold">Quiz Type</label>
+                        <select id="quizType" th:field="*{quizCategory}" class="form-select" required>
+                            <option value="" disabled>-- Select Quiz Type --</option>
+                            <option value="EXAM">Exam</option>
+                            <option value="PRACTICE">Practice</option>
+                        </select>
+                        <div class="invalid-feedback">Quiz type is required.</div>
+                    </div>
+                    <div class="col-md-6 mb-1">
+                        <label for="createdBy" class="form-label fw-bold">Created By</label>
+                        <div id="createdBy" th:text="${user.username}" class="form-control-plaintext"></div>
+                        <input type="hidden" th:field="*{createdBy}" th:value="${user.id}" />
+                    </div>
+                </div>
+
+                <!-- Thêm vào sau phần Quiz Settings và trước phần Buttons -->
+                <h5 class="text-primary mt-4">Tags</h5>
+                <div class="row">
+                    <div class="col-md-12 mb-1">
+                        <!-- Thêm hidden input để lưu tagIds -->
+                        <input type="hidden" name="tagIds" id="selectedTagsInput">
+                        <button type="button" class="btn btn-secondary mt-2" data-bs-toggle="modal" data-bs-target="#tagsModal">
+                            Manage Tags
+                        </button>
+                        <span id="selectedTagsCount" class="ms-2 text-muted">
+                            <th:block th:if="${quiz != null && quiz.tags != null}">
+                                <span th:each="tag : ${quiz.tags}"
+                                      class="badge bg-secondary me-1"
+                                      th:text="${tag.name}"
+                                      th:data-tag-id="${tag.id}">
+                                </span>
+                            </th:block>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">Update</button>
+                    <a th:href="@{/quizes}" class="btn btn-secondary btn-lg ms-3">Back to List</a>
+                </div>
+
+                <!-- Add this hidden input to ensure the quiz ID is always available -->
+                <input type="hidden" name="quizId" th:value="${quiz.id}">
+            </form>
+
+            <!-- Thông báo lỗi / thành công -->
+            <div th:if="${error}" class="alert alert-danger mt-3" th:text="${error}"></div>
+            <div th:if="${success}" class="alert alert-success mt-3" th:text="${success}"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Thêm Modal vào cuối file, trước đóng thẻ body -->
+<!-- Modal for managing tags -->
+<div class="modal fade" id="tagsModal" tabindex="-1" aria-labelledby="tagsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="tagsModalLabel">
+                    <i class="fas fa-tags me-2"></i>Manage Tags
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Alert Container -->
+                <div id="alertContainer"></div>
+
+                <div class="row">
+                    <!-- Left column: Search and Create -->
+                    <div class="col-md-5 border-end">
+                        <!-- Create New Tag -->
+                        <form th:action="@{/quizes/tags/create}" method="post" id="createTagForm" class="mb-4" onsubmit="createTag(event)">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="tagName" name="name" placeholder="New tag name" required>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Search Tags -->
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="searchTags"
+                                       placeholder="Search tags" oninput="searchTags()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right column: Tags List -->
+                    <div class="col-md-7">
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-danger" onclick="deleteSelectedTags()" id="deleteSelectedBtn" disabled>
+                                <i class="fas fa-trash-alt me-1"></i>Delete Selected
+                                <span class="badge bg-light text-danger ms-1" id="selectedCount">0</span>
+                            </button>
+                        </div>
+
+                        <div class="tags-scroll" style="max-height: 400px; overflow-y: auto;">
+                            <div id="tagsContainer" class="d-flex flex-wrap gap-2">
+                                <!-- Thêm loading indicator -->
+                                <div class="text-center w-100">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading tags...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveSelectedTags()">
+                    <i class="fas fa-check me-1"></i>Done
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Thêm styles -->
+<style>
+.tag-item {
+    transition: all 0.2s ease;
+}
+
+.tag-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.tag-item .form-check-input:checked + .form-check-label {
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+.tags-scroll {
+    background: #f8f9fa;
+}
+
+.tags-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tags-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.tags-scroll::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.tags-scroll::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+#alertContainer {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.alert {
+    margin-bottom: 1rem;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+.modal {
+    z-index: 1045;
+}
+</style>
+
+<!-- Thêm script -->
+<script>
+// Modify the DOMContentLoaded event handler to be more defensive
+document.addEventListener('DOMContentLoaded', function() {
+    if (isQuizEditPage()) {
+        initializeModal();
+        initializeDateTimeConstraints();
+        initializeFormValidation();
+    }
+});
+
+function initializeModal() {
+    // Đảm bảo chỉ chạy trên trang edit quiz
+    if (!isQuizEditPage()) return;
+
+    const modalElement = document.getElementById('tagsModal');
+    if (!modalElement) {
+        console.warn('Tags modal not found');
+        return;
+    }
+
+    // Xử lý sự kiện mở modal
+    const modalToggleBtn = document.querySelector('[data-bs-toggle="modal"][data-bs-target="#tagsModal"]');
+    if (modalToggleBtn) {
+        modalToggleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Reset search và container chỉ khi các phần tử tồn tại
+            const searchInput = document.getElementById('searchTags');
+            if (searchInput) searchInput.value = '';
+
+            const tagsContainer = document.getElementById('tagsContainer');
+            if (tagsContainer) tagsContainer.innerHTML = '';
+
+            // Xóa backdrop cũ và đảm bảo body không còn class modal-open
+            cleanupModalBackdrop();
+
+            // Khởi tạo modal mới mỗi lần mở để tránh vấn đề với instance cũ
+            let modal;
+            try {
+                // Hủy modal instance cũ nếu có
+                const oldModal = bootstrap.Modal.getInstance(modalElement);
+                if (oldModal) {
+                    oldModal.dispose();
+                }
+
+                // Tạo modal instance mới
+                modal = new bootstrap.Modal(modalElement);
+                modal.show();
+
+                // Thêm backdrop manually để đảm bảo nó xuất hiện
+                setTimeout(addModalBackdrop, 100);
+            } catch (error) {
+                console.error('Error initializing modal:', error);
+                return;
+            }
+
+            // Load tags
+            searchTags();
+        });
+    }
+
+    // Xử lý sự kiện đóng modal
+    modalElement.addEventListener('hidden.bs.modal', function() {
+        setTimeout(cleanupModalBackdrop, 300);
+    });
+}
+
+// Tách các chức năng thành các hàm riêng biệt
+function initializeDateTimeConstraints() {
+    const startTimeInput = document.getElementById('startTime');
+    const endTimeInput = document.getElementById('endTime');
+    if (!startTimeInput || !endTimeInput) return;
+
+    function formatDateTime(date) {
+        return date.getFullYear() + '-' +
+               String(date.getMonth() + 1).padStart(2, '0') + '-' +
+               String(date.getDate()).padStart(2, '0') + 'T' +
+               String(date.getHours()).padStart(2, '0') + ':' +
+               String(date.getMinutes()).padStart(2, '0');
+    }
+
+    const now = new Date();
+    startTimeInput.min = formatDateTime(now);
+
+    startTimeInput.addEventListener('change', function() {
+        const startDate = new Date(this.value);
+        endTimeInput.min = formatDateTime(startDate);
+
+        if (endTimeInput.value && new Date(endTimeInput.value) < startDate) {
+            endTimeInput.value = '';
+        }
+    });
+}
+
+function initializeFormValidation() {
+    const form = document.querySelector('form');
+    if (!form) return;
+
+    form.addEventListener('submit', function(event) {
+        const startTime = new Date(document.getElementById('startTime').value);
+        const endTime = new Date(document.getElementById('endTime').value);
+        const now = new Date();
+
+        if (startTime < now) {
+            event.preventDefault();
+            alert('Start time cannot be in the past');
+            return;
+        }
+
+        if (endTime <= startTime) {
+            event.preventDefault();
+            alert('End time must be after start time');
+            return;
+        }
+    });
+}
+
+// Thêm các hàm utility mới
+function showAlert(message, type = 'success', timeout = 3000) {
+    const alertContainer = document.getElementById('alertContainer');
+    if (!alertContainer) return;
+
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    alertContainer.appendChild(alertDiv);
+    if (timeout) {
+        setTimeout(() => alertDiv.remove(), timeout);
+    }
+}
+
+function updateDeleteButton() {
+    const selectedTags = document.querySelectorAll('.tag-checkbox:checked');
+    const deleteBtn = document.getElementById('deleteSelectedBtn');
+    const selectedCount = document.getElementById('selectedCount');
+
+    if (deleteBtn) deleteBtn.disabled = selectedTags.length === 0;
+    if (selectedCount) selectedCount.textContent = selectedTags.length;
+}
+
+// Update searchTags function to handle different URL patterns
+function searchTags() {
+    const query = document.getElementById('searchTags')?.value.trim() || '';
+    const tagsContainer = document.getElementById('tagsContainer');
+    const quizId = getQuizId();
+
+    if (!tagsContainer) {
+        console.error('Tags container not found');
+        return;
+    }
+
+    // Show loading state
+    tagsContainer.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+
+    // First, get the quiz's current tags
+    Promise.all([
+        fetch(`/quizes/${quizId}/tags`),
+        fetch(`/quizes/tags/search?name=${encodeURIComponent(query)}`)
+    ])
+    .then(([quizTagsResponse, allTagsResponse]) =>
+        Promise.all([quizTagsResponse.json(), allTagsResponse.json()])
+    )
+    .then(([quizTags, allTags]) => {
+        const quizTagIds = new Set(quizTags.map(tag => tag.id));
+
+        tagsContainer.innerHTML = '';
+
+        if (!allTags || allTags.length === 0) {
+            tagsContainer.innerHTML = `
+                <div class="alert alert-info w-100">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No tags found ${query ? `matching "${query}"` : ''}
+                </div>`;
+            return;
+        }
+
+        // Display all tags, checking those that belong to the quiz
+        allTags.forEach(tag => {
+            const isChecked = quizTagIds.has(tag.id);
+            const sanitizedName = tag.name ? tag.name.replace(/[<>]/g, '') : 'Unnamed Tag';
+
+            tagsContainer.innerHTML += `
+                <div class="tag-item">
+                    <div class="d-flex align-items-center bg-light rounded p-2">
+                        <div class="form-check mb-0">
+                            <input class="form-check-input tag-checkbox" type="checkbox"
+                                   id="tag-${tag.id}" name="tagIds" value="${tag.id}"
+                                   onchange="updateDeleteButton()"
+                                   ${isChecked ? 'checked' : ''}>
+                            <label class="form-check-label" for="tag-${tag.id}">
+                                ${sanitizedName}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        updateDeleteButton();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        tagsContainer.innerHTML = `
+            <div class="alert alert-danger w-100">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                ${error.message || 'Unable to load tags. Please try refreshing the page.'}
+            </div>`;
+    });
+}
+
+function createTag(event) {
+    event.preventDefault();
+    const tagName = document.getElementById('tagName').value.trim();
+
+    if (!tagName) {
+        showAlert('Tag name cannot be empty', 'danger');
+        return;
+    }
+
+    fetch('/quizes/tags/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `name=${encodeURIComponent(tagName)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        showAlert('Tag created successfully', 'success');
+        document.getElementById('tagName').value = '';
+        searchTags();
+    })
+    .catch(error => {
+        showAlert(error.message || 'Failed to create tag', 'danger');
+    });
+}
+
+function saveSelectedTags() {
+    const quizId = getQuizId();
+    const selectedTags = Array.from(document.querySelectorAll('.tag-checkbox:checked'))
+        .map(checkbox => parseInt(checkbox.value));
+
+    fetch(`/quizes/${quizId}/tags/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ tagIds: selectedTags })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Failed to update tags');
+        return response.text();
+    })
+    .then(() => {
+        // Update the tags display in the main form
+        updateMainFormTags(selectedTags);
+
+        // Close modal
+        const modalElement = document.getElementById('tagsModal');
+        const bsModal = bootstrap.Modal.getInstance(modalElement);
+        if (bsModal) {
+            bsModal.hide();
+            // Đảm bảo backdrop được dọn sạch
+            setTimeout(cleanupModalBackdrop, 300);
+        }
+
+        showAlert('Tags updated successfully', 'success');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('Failed to update tags. Please try again.', 'danger');
+    });
+}
+
+function updateMainFormTags(selectedTagIds) {
+    const selectedTagsCount = document.getElementById('selectedTagsCount');
+    const selectedTags = Array.from(document.querySelectorAll('.tag-checkbox:checked'))
+        .map(checkbox => ({
+            id: checkbox.value,
+            name: checkbox.nextElementSibling.textContent.trim()
+        }));
+
+    const tagsHtml = selectedTags
+        .map(tag => `<span class="badge bg-secondary me-1" data-tag-id="${tag.id}">${tag.name}</span>`)
+        .join('');
+
+    selectedTagsCount.innerHTML = tagsHtml;
+}
+
+// Helper function to get quiz ID
+function getQuizId() {
+    const form = document.querySelector('form');
+    if (!form) return null;
+
+    const actionUrl = form.getAttribute('action') || '';
+    const match = actionUrl.match(/\/quizes\/edit\/(\d+)/);
+    return match ? match[1] : document.querySelector('[name="quizId"]')?.value;
+}
+
+// Thêm hàm để kiểm tra và xóa backdrop thừa
+function cleanupModalBackdrop() {
+    // Xóa tất cả backdrop cũ
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    backdrops.forEach(backdrop => backdrop.remove());
+
+    // Reset body styles
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+}
+
+// Thêm hàm kiểm tra trang hiện tại
+function isQuizEditPage() {
+    return window.location.pathname.includes('/quizes/edit/');
+}
+
+// Cải thiện hàm addModalBackdrop để đảm bảo không tạo nhiều backdrop
+function addModalBackdrop() {
+    // Xóa backdrop cũ trước
+    cleanupModalBackdrop();
+
+    // Tạo backdrop mới
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop fade';
+    document.body.appendChild(backdrop);
+
+    // Force reflow để animation hoạt động
+    backdrop.offsetHeight;
+
+    // Thêm class "show" để kích hoạt hiệu ứng fade in
+    backdrop.classList.add('show');
+    document.body.classList.add('modal-open');
+    document.body.style.overflow = 'hidden';
+}
+
+// Thay thế function deleteSelectedTags cũ bằng function mới này
+async function deleteSelectedTags() {
+    const selectedTags = Array.from(document.querySelectorAll('.tag-checkbox:checked'))
+        .map(checkbox => ({
+            id: checkbox.value,
+            name: checkbox.nextElementSibling.textContent.trim()
+        }));
+
+    if (selectedTags.length === 0) return;
+
+    if (!confirm(`Are you sure you want to delete ${selectedTags.length} selected tags?`)) {
+        return;
+    }
+
+    // Kiểm tra trước tất cả các tag được chọn
+    try {
+        for (const tag of selectedTags) {
+            const checkResponse = await fetch(`/quizes/tags/check/${tag.id}`);
+            const checkResult = await checkResponse.json();
+
+            if (checkResult.isUsed) {
+                // Nếu có bất kỳ tag nào đang được sử dụng, hiển thị thông báo và dừng
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.innerHTML = `
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Cannot proceed with deletion:</strong><br>
+                    Tag '${tag.name}' is being used in one or more quizzes.<br>
+                    <small class="mt-2">No tags will be deleted to maintain data integrity.</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+
+                const alertContainer = document.getElementById('alertContainer');
+                alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+                setTimeout(() => alertDiv.remove(), 8000);
+                return; // Dừng toàn bộ quá trình xóa
+            }
+        }
+
+        // Nếu tất cả các tag đều an toàn để xóa, tiến hành xóa
+        let successCount = 0;
+        for (const tag of selectedTags) {
+            const response = await fetch(`/quizes/tags/delete/${tag.id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                successCount++;
+            }
+        }
+
+        // Hiển thị thông báo thành công
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show';
+        alertDiv.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>
+            Successfully deleted ${successCount} tags
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+        const alertContainer = document.getElementById('alertContainer');
+        alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+        setTimeout(() => alertDiv.remove(), 3000);
+
+        // Refresh tag list
+        searchTags();
+        updateDeleteButton();
+
+    } catch (error) {
+        // Hiển thị thông báo lỗi chung
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+        alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong>Error:</strong> Unable to process tag deletion.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+        const alertContainer = document.getElementById('alertContainer');
+        alertContainer.insertBefore(alertDiv, alertContainer.firstChild);
+        setTimeout(() => alertDiv.remove(), 5000);
+    }
+}
+</script>

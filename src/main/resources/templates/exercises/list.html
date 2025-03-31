@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Exercises List</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Bootstrap Icons CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+    <style>
+        /* Sử dụng table-bordered để có đường viền giữa các cột */
+        table.table-bordered th,
+        table.table-bordered td {
+            border: 1px solid #dee2e6;
+        }
+        /* Dòng tiêu đề với màu xanh nhạt */
+        table.table-bordered thead tr {
+            background-color: #e3f2fd; /* Màu xanh nhạt */
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+<!-- Wrapper for the whole page -->
+<div class="d-flex flex-column min-vh-100">
+    <!-- Header -->
+    <div th:replace="~{fragments :: header}" class="sticky-top"></div>
+
+    <!-- Main Content -->
+    <div class="flex-grow-1 container mt-5">
+        <div class="px-5">
+            <!-- Title -->
+            <h1 class="text-center mb-4">Exercises</h1>
+
+            <!-- Combined Filter and Toolbar Section -->
+            <div class="row mb-4 align-items-center">
+                <form id="filterForm" class="col-md-6" method="get" action="/exercises">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="languageFilter" class="form-label">Language</label>
+                            <select id="languageFilter" name="language" class="form-select">
+                                <option value="">All Languages</option>
+                                <option th:each="lang : ${languages}"
+                                        th:value="${lang.id}"
+                                        th:text="${lang.language}"
+                                        th:selected="${lang.id == currentLanguage}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="levelFilter" class="form-label">Difficulty</label>
+                            <select id="levelFilter" name="level" class="form-select">
+                                <option value="" th:selected="${currentLevel == null or currentLevel == ''}">All Levels</option>
+                                <option value="EASY" th:selected="${currentLevel == 'EASY'}">Easy</option>
+                                <option value="MEDIUM" th:selected="${currentLevel == 'MEDIUM'}">Medium</option>
+                                <option value="HARD" th:selected="${currentLevel == 'HARD'}">Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+                <!-- Toolbar: Nút Add và Delete -->
+                <div class="col-md-6 d-flex justify-content-end">
+                    <a href="/exercises/create" class="btn btn-primary me-2">
+                        <i class="bi bi-plus-circle"></i> Add exercise
+                    </a>
+                    <button class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead>
+                    <tr>
+                        <th scope="col" class="text-center" style="width: 5%;">
+                            <label>
+                                <input type="checkbox" />
+                            </label>
+                        </th>
+                        <th scope="col" style="width: 20%;">Title</th>
+                        <th scope="col" class="text-center" style="width: 10%;">Language</th>
+                        <th scope="col" class="text-center" style="width: 10%;">Difficulty</th>
+                        <th scope="col" style="width: 40%;">Description</th>
+                        <th scope="col" class="text-center" style="width: 15%;">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="exercise : ${exercises}">
+                        <td class="text-center">
+                            <label>
+                                <input type="checkbox" />
+                            </label>
+                        </td>
+                        <td th:text="${exercise.name}"></td>
+                        <td class="text-center" th:text="${exercise.language.language}">Language</td>
+                        <td class="text-center">
+              <span th:class="${'badge ' + (exercise.level.name() == 'HARD' ? 'bg-danger' : (exercise.level.name() == 'MEDIUM' ? 'bg-warning' : 'bg-success'))}" th:text="${exercise.level}">
+              </span>
+                        </td>
+
+                        <td th:text="${exercise.description}">
+                            Description comes here...
+                        </td>
+                        <td class="text-center">
+                            <a th:href="@{'/judgement/code_space/' + ${exercise.id}}" class="btn btn-outline-primary btn-sm me-1" title="Info">
+                                <i class="bi bi-info-circle"></i>
+                            </a>
+                            <a th:href="@{'/exercises/edit/' + ${exercise.id}}"
+                               class="btn btn-outline-primary btn-sm me-1" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a th:href="@{'/exercises/delete/' + ${exercise.id}}"
+                               class="btn btn-outline-danger btn-sm"
+                               onclick="return confirm('Are you sure you want to delete this exercise?')"
+                               title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(exercises)}">
+                        <td colspan="6" class="text-center">No exercises found.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-center mt-4" th:if="${totalPages >= 1}">
+                <nav>
+                    <ul class="pagination">
+                        <!-- Nút First: chỉ hiển thị nếu có nhiều hơn 1 trang và không phải trang đầu -->
+                        <li class="page-item" th:if="${totalPages > 1 and currentPage > 0}">
+                            <a class="page-link"
+                               th:href="@{/exercises(page=0, language=${currentLanguage}, level=${currentLevel})}">
+                                First
+                            </a>
+                        </li>
+                        <!-- Nút Previous: chỉ hiển thị nếu có nhiều hơn 1 trang và không phải trang đầu -->
+                        <li class="page-item" th:if="${totalPages > 1 and currentPage > 0}">
+                            <a class="page-link"
+                               th:href="@{/exercises(page=${currentPage - 1}, language=${currentLanguage}, level=${currentLevel})}">
+                                Previous
+                            </a>
+                        </li>
+                        <!-- Danh sách số trang -->
+                        <li class="page-item"
+                            th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                            th:classappend="${i == currentPage} ? ' active'">
+                            <a class="page-link"
+                               th:href="@{/exercises(page=${i}, language=${currentLanguage}, level=${currentLevel})}"
+                               th:text="${i + 1}">Page</a>
+                        </li>
+                        <!-- Nút Next: chỉ hiển thị nếu có nhiều hơn 1 trang và chưa ở trang cuối -->
+                        <li class="page-item" th:if="${totalPages > 1 and currentPage < totalPages - 1}">
+                            <a class="page-link"
+                               th:href="@{/exercises(page=${currentPage + 1}, language=${currentLanguage}, level=${currentLevel})}">
+                                Next
+                            </a>
+                        </li>
+                        <!-- Nút Last: chỉ hiển thị nếu có nhiều hơn 1 trang và chưa ở trang cuối -->
+                        <li class="page-item" th:if="${totalPages > 1 and currentPage < totalPages - 1}">
+                            <a class="page-link"
+                               th:href="@{/exercises(page=${totalPages - 1}, language=${currentLanguage}, level=${currentLevel})}">
+                                Last
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments :: footer}" class="mt-auto"></div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Khi có thay đổi trong các select của form, tự động submit form lọc
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterForm = document.getElementById('filterForm');
+        const selects = filterForm.querySelectorAll('select');
+        selects.forEach(function(select) {
+            select.addEventListener('change', function() {
+                filterForm.submit();
+            });
+        });
+    });
+</script>
+</body>
+</html>

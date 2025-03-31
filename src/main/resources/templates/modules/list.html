@@ -1,0 +1,111 @@
+<div class="px-5 flex-grow-1">
+    <h1 class="text-center">Modules</h1>
+    <div>
+        <div class="d-flex align-items-center mb-3">
+            <div class="flex-fill">
+                <!-- Search Form -->
+                <form action="/modules" method="get" class="d-flex w-50">
+                    <!-- Correctly bind the searchQuery model attribute using Thymeleaf -->
+                    <input type="text" class="form-control me-2" name="searchQuery" th:value="${searchQuery}" placeholder="Search by module name" aria-label="Search">
+                    <button class="btn btn-outline-secondary me-2" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+            </div>
+            <div>
+                <a href="/modules/print" class="btn btn-outline-secondary me-2" target="_blank">
+                    <i class="bi bi-printer"></i> Print
+                </a>
+                <!-- Export Button -->
+                <a href="modules/export" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-file-earmark-excel"></i> Export
+                </a>
+
+                <!-- Import Button that triggers modal -->
+                <button class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="bi bi-upload"></i> Import
+                </button>
+
+                <a href="/modules/create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Create New Module
+                </a>
+            </div>
+        </div>
+        <div class="scrollable-table">
+            <table class="table table-bordered">
+                <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                <tr>
+                    <th class="text-center">#</th>
+                    <th>Name</th>
+                    <th>URL</th>
+                    <th>Icon</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="module, iterStat : ${modules}">
+                    <td class="text-center" th:text="${iterStat.index + 1}"></td>
+                    <td th:text="${module.getName()}"></td>
+                    <td th:text="${module.getUrl()}"></td>
+                    <td>
+                        <i th:class="${module.getIcon()}"></i>
+                    </td>
+                    <td>
+                        <a th:href="@{'/modules/edit/' + ${module.getId()}}" class="btn btn-outline-secondary btn-sm"
+                           title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a th:href="@{'/modules/delete/' + ${module.getId()}}" class="btn btn-outline-secondary btn-sm"
+                           onclick="return confirm('Are you sure?')" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </a>
+
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination float-end" th:if="${totalPages > 0}">
+            <ul class="pagination">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/modules(page=${currentPage - 1}, pageSize=${pageSize}, searchQuery=${searchQuery})}">Previous</a>
+                </li>
+
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPage == i} ? 'active'">
+                    <a class="page-link" th:href="@{/modules(page=${i}, pageSize=${pageSize}, searchQuery=${searchQuery})}" th:text="${i + 1}"></a>
+                </li>
+
+                <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                    <a class="page-link" th:href="@{/modules(page=${currentPage + 1}, pageSize=${pageSize}, searchQuery=${searchQuery})}">Next</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Import -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="importModalLabel">Import Roles from Excel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Information about the template -->
+                <!--                    <div class="mb-3">-->
+                <!--                        <p>Download the Excel template before uploading your file:</p>-->
+                <!--                        <a href="/templates/roles.xlsx" class="btn btn-link" download>Download Role Template</a>-->
+                <!--                    </div>-->
+                <!-- Import form -->
+                <form method="post" enctype="multipart/form-data" action="/modules/import">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Choose Excel File</label>
+                        <input type="file" name="file" id="file" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Import</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

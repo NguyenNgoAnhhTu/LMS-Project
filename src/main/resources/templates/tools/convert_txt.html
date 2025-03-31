@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paste Content for Word Files</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    .btn-primary {
+      background-color: #007bff;
+      border-color: #007bff;
+    }
+    .btn-primary:hover {
+      background-color: #0056b3;
+      border-color: #0056b3;
+    }
+    .text-area {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="d-flex flex-column min-vh-100">
+  <!-- Header -->
+  <div th:replace="~{fragments :: header}" class="sticky-top"></div>
+
+  <div class="flex-grow-1 container mt-5">
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link" href="/tools">Excel to JSON</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" href="/tools/convert_txt">TXT to JSON</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/tools/generate_exam">Generate Exam</a>
+      </li>
+    </ul>
+
+    <h1 class="text-center">Paste Content for Word Files</h1>
+    <p class="text-center">Enter the number of files and paste the content below for each file.</p>
+
+    <!-- Input for Number of Files -->
+    <div class="mb-4">
+      <label for="fileCount" class="form-label">Number of files:</label>
+      <input type="number" id="fileCount" class="form-control" min="1" max="20" placeholder="Enter number of files" required>
+    </div>
+
+    <!-- Button to Generate Text Areas -->
+    <div class="d-flex gap-2 justify-content-center mt-3">
+      <button id="generateFields" class="btn btn-outline-primary btn-lg mb-4">Generate Fields</button>
+      <a href="instruction.pdf" class="btn btn-info btn-lg mb-4" download>
+        <i class="bi bi-download"></i> Download Material
+      </a>
+    </div>
+
+    <!-- Dynamic Text Areas for Pasting Content -->
+    <form id="contentForm" method="POST" enctype="multipart/form-data" th:action="@{/tools/upload_txt}">
+      <div id="textAreasContainer"></div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn btn-primary d-none" id="submitButton">Submit Contents</button>
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <div th:replace="~{fragments :: footer}" class="mt-auto"></div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const fileCountInput = document.getElementById('fileCount');
+  const generateFieldsButton = document.getElementById('generateFields');
+  const textAreasContainer = document.getElementById('textAreasContainer');
+  const submitButton = document.getElementById('submitButton');
+  const contentForm = document.getElementById('contentForm');
+
+  // Reset toàn bộ dữ liệu khi load lại trang
+  window.onload = () => {
+    fileCountInput.value = '';
+    textAreasContainer.innerHTML = '';
+    submitButton.classList.add('d-none');
+    contentForm.reset();
+  };
+
+  // Xử lý khi nhấn nút Generate Fields
+  generateFieldsButton.addEventListener('click', () => {
+    const fileCount = parseInt(fileCountInput.value);
+
+    if (isNaN(fileCount) || fileCount <= 0 || fileCount > 20) {
+      alert('Please enter a valid number of files (1-20).');
+      return;
+    }
+
+    // Reset toàn bộ dữ liệu khi Generate Fields
+    textAreasContainer.innerHTML = '';
+    contentForm.reset();
+
+    // Tạo mới các textarea
+    for (let i = 1; i <= fileCount; i++) {
+      const textAreaGroup = document.createElement('div');
+      textAreaGroup.className = 'text-area';
+
+      textAreaGroup.innerHTML = `
+      <label for="fileContent${i}" class="form-label">Content for File ${i}:</label>
+      <textarea id="fileContent${i}" name="txtFile${i}" class="form-control" rows="5" placeholder="Paste content here for file ${i}"></textarea>
+    `;
+
+      textAreasContainer.appendChild(textAreaGroup);
+    }
+
+    // Hiển thị nút Submit
+    submitButton.classList.remove('d-none');
+  });
+
+  // Xử lý khi submit form
+  contentForm.addEventListener('submit', (e) => {
+    const textareas = textAreasContainer.querySelectorAll('textarea');
+    let hasContent = false;
+
+    textareas.forEach(textarea => {
+      if (textarea.value.trim() === '') {
+        textarea.removeAttribute('name');
+      } else {
+        hasContent = true;
+      }
+    });
+
+    if (!hasContent) {
+      e.preventDefault();
+      alert('Please fill in at least one file content before submitting.');
+    }
+  });
+</script>
+</body>
+</html>

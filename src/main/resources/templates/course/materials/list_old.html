@@ -1,0 +1,78 @@
+<div>
+    <!-- Session Navigation -->
+    <div class="sub-navbar bg-info p-2 rounded-3 mb-3 d-flex justify-content-between align-items-center">
+        <button id="scroll-left" type="button" class="btn btn-light p-2 rounded-circle">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <div id="sectionsContainer">
+            <button type="submit" th:each="section : ${sections}"
+                    th:value="${section.id}"
+                    class="btn btn-transparent text-white fw-bold px-3 py-2 me-2">
+                [[${section.name}]]
+            </button>
+        </div>
+
+        <button id="scroll-right" type="button" class="btn btn-light p-2 rounded-circle">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Existing Materials Display Section -->
+    <div class="material-list">
+        <h2 class="mb-3" style="font-size: 27px;">Material</h2>
+
+        <!-- Buttons Section -->
+        <div class="mb-3">
+            <div class="d-flex align-items-center mb-2">
+                <button type="button" id="add-reading-material" class="btn btn-secondary d-flex align-items-center">
+                    <i class="fas fa-plus-circle" style="font-size: 24px; color: #389bb0;"></i>
+                    <span class="ms-2" style="color: #389bb0;">Add New Material</span>
+                </button>
+            </div>
+            <div class="d-flex align-items-center mb-2">
+                <button type="button" id="add-uploaded-pdf" class="btn btn-secondary d-flex align-items-center ms-2">
+                    <i class="fas fa-file-upload" style="font-size: 24px; color: #389bb0;"></i>
+                    <span class="ms-2" style="color: #389bb0;">Add PDF</span>
+                </button>
+            </div>
+<!--            <div class="d-flex align-items-center mb-2">-->
+<!--                <a th:href="@{/reorder-course-materials(courseId=${course.id}, sectionId=${selectedSection.id})}"-->
+<!--                   class="btn btn-secondary d-flex align-items-center">-->
+<!--                    <i class="fas fa-arrows-alt" style="font-size: 24px; color: #389bb0;"></i>-->
+<!--                    <span class="ms-2" style="color: #389bb0;">Reorder Material</span>-->
+<!--                </a>-->
+<!--            </div>-->
+        </div>
+
+        <hr class="my-4 border-0 border-top border-dark">
+
+        <!-- Scrollable Files Section -->
+<!--        <div class="material-container">-->
+<!--            <div th:each="readingMaterial, iterStat : ${readingMaterials}" class="material-item">-->
+<!--                <div class="material-info">-->
+<!--                    <span class="index-number">[[${iterStat.count}]].</span>-->
+<!--                    <a href="#" class="title" th:data-id="${readingMaterial.id}">[[${readingMaterial.title}]]</a>-->
+<!--                    <span class="material-type">([[${readingMaterial.materialType}]]])</span>-->
+<!--                </div>-->
+<!--                <div class="material-actions">-->
+<!--                    <a th:href="@{/edit-reading-material(courseId=${course.id}, sectionId=${selectedSection.id}, materialId=${readingMaterial.id})}"-->
+<!--                       class="btn btn-warning p-2 fs-6">-->
+<!--                        <i class="fas fa-edit"></i>-->
+<!--                    </a>-->
+<!--                    <span class="trash-can text-muted ms-2" style="cursor: pointer;"-->
+<!--                          th:data-id="${readingMaterial.id}"-->
+<!--                          th:data-type="${readingMaterial.materialType}">-->
+<!--                        <i class="fas fa-trash"></i>-->
+<!--                    </span>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div th:if="${#lists.isEmpty(readingMaterials)}">No materials available.</div>-->
+<!--        </div>-->
+    </div>
+
+    <div class="d-flex justify-content-end mt-n2 pe-5">
+        <button type="submit" class="btn btn-primary px-4 py-2 me-2" style="background-color: #389bb0;">Save</button>
+        <a th:href="@{/courses}" class="btn btn-secondary px-4 py-2 text-white text-decoration-none">Return to Course List</a>
+    </div>
+</div>

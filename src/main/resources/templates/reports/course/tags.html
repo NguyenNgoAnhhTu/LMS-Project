@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Tag Report</title>
+    <!-- Include your styles and scripts here -->
+</head>
+<body>
+<!-- Base layout -->
+<div th:replace="base :: base"></div>
+
+<!-- Include Tab Navigation -->
+<div th:replace="reports/course/menuReport :: menu"></div>
+
+<div class="mt-1">
+    <h1>Tag Report</h1>
+
+    <!-- Static header table -->
+    <table class="table">
+        <thead>
+        <tr>
+            <td>#</td>
+            <th>Tag Name</th>
+            <th>Topic</th>
+<!--            <th>Course Count</th>-->
+        </tr>
+        </thead>
+    </table>
+
+    <!-- Scrollable second table (content) -->
+    <div class="overflow-auto" style="max-height: 53vh;"> <!-- Adjust height as needed -->
+        <table class="table table-striped">
+            <tbody>
+            <!-- Iterate over tags -->
+            <tr th:each="tag, stat : ${tags}">
+                <td th:text="${stat.index + 1}"></td>
+                <td th:text="${tag.name}"></td>
+                <td th:text="${tag.topic.name}"></td>
+<!--                <td th:text="${tag.courseCount}"></td>-->
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

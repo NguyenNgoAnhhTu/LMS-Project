@@ -1,0 +1,128 @@
+<!-- Wrapper for the whole page -->
+<div class="d-flex flex-column min-vh-100">
+    <div class="px-5 flex-grow-1">
+        <h1 class="text-center">AssessmentType</h1>
+        <div class="d-flex align-items-center mb-3">
+            <div class="flex-fill">
+                <!-- Search Form -->
+                <form action="/ass-types" method="get" class="d-flex w-50">
+                    <!-- Correctly bind the searchQuery model attribute using Thymeleaf -->
+                    <input type="text" class="form-control me-2" name="searchQuery" th:value="${searchQuery}" placeholder="Search by assessmentType name" aria-label="Search">
+                    <button class="btn btn-outline-secondary me-2" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+            </div>
+            <div>
+                <!-- Export Button -->
+                <a href="/ass-types/export" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-file-earmark-excel"></i> Export
+                </a>
+
+                <!-- Import Button that triggers modal -->
+                <button  class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="bi bi-upload"></i> Import
+                </button>
+
+                <a href="/ass-types/print" class="btn btn-outline-secondary me-2" target="_blank">
+                    <i class="bi bi-printer"></i> Print
+                </a>
+
+                <a href="/ass-types/create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Create
+                </a>
+            </div>
+        </div>
+
+        <table class="table table-bordered">
+            <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="assessment_type : ${AssessmentTypePage}">
+                <td th:text="${assessment_type.id}"></td>
+                <td th:text="${assessment_type.name}"></td>
+
+                <td>
+                    <a th:href="@{'/ass-types/edit/' + ${assessment_type.id}}" class="btn btn-outline-secondary btn-sm" title="Edit">
+                        <i class="bi bi-pencil text-secondary"></i>
+                    </a>
+                    <a th:href="@{'/ass-types/delete/' + ${assessment_type.id}}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure?')" title="Delete">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <!-- Pagination controls -->
+        <div class="d-flex justify-content-end">
+            <ul class="pagination">
+                <!-- Show "No Data" when there are no elements -->
+                <li class="page-item disabled" th:if="${AssessmentTypePage.totalElements == 0}">
+                    <span class="page-link">No Data</span>
+                </li>
+
+                <!-- Display pagination controls only when there is data -->
+                <th:block th:if="${AssessmentTypePage.totalElements > 0}">
+                    <!-- First Page -->
+                    <li class="page-item" th:if="${AssessmentTypePage.number > 0}">
+                        <a class="page-link" th:href="@{'?page=0'}">First</a>
+                    </li>
+
+                    <!-- Previous Page -->
+                    <li class="page-item" th:if="${AssessmentTypePage.number > 0}">
+                        <a class="page-link" th:href="@{'?page=' + ${AssessmentTypePage.number - 1}}">Previous</a>
+                    </li>
+
+                    <!-- Loop through and display page numbers -->
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, AssessmentTypePage.totalPages - 1)}"
+                        th:classappend="${i == AssessmentTypePage.number} ? ' active' : ''">
+                        <a class="page-link" th:href="@{'?page=' + ${i}}"
+                           th:text="${i + 1}">1</a> <!-- Display page numbers (1-indexed) -->
+                    </li>
+
+                    <!-- Next Page -->
+                    <li class="page-item" th:if="${AssessmentTypePage.number < AssessmentTypePage.totalPages - 1}">
+                        <a class="page-link" th:href="@{'?page=' + ${AssessmentTypePage.number + 1}}">Next</a>
+                    </li>
+
+                    <!-- Last Page -->
+                    <li class="page-item" th:if="${AssessmentTypePage.number < AssessmentTypePage.totalPages - 1}">
+                        <a class="page-link" th:href="@{'?page=' + ${AssessmentTypePage.totalPages - 1}}">Last</a>
+                    </li>
+                </th:block>
+            </ul>
+        </div>
+    </div>
+    <!-- Modal for Import -->
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Import AssessmentTypes from Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Information about the template -->
+                    <div class="mb-3">
+                        <p>Download the Excel template before uploading your file:</p>
+                        <a href="/templates/assessmentTypes.xlsx" class="btn btn-link" download>Download AssessmentType Template</a>
+                    </div>
+                    <!-- Import form -->
+                    <form method="post" enctype="multipart/form-data" action="/ass-types/import">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Choose Excel File</label>
+                            <input type="file" name="file" id="file" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Import</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

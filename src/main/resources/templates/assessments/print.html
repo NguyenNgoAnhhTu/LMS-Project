@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Assessment</title>
+    <link rel="stylesheet" href="/css/print.css">
+</head>
+<body>
+<h1>Assessment List</h1>
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th class="text-center">#</th>
+        <th>Title</th>
+        <th>Course</th>
+        <th>Assessment Type</th>
+        <th>Created At</th>
+        <th>Created By</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Loop through assessments and display their details -->
+    <tr th:each="assessment, iterStat : ${assessments}">
+        <td class="text-center" th:text="${iterStat.index + 1}"></td>
+        <td th:text="${assessment.title}"></td>
+        <td th:text="${assessment.course.name}"></td>
+        <td th:text="${assessment.assessmentType.name}"></td>
+        <td th:text="${assessment.createdAt.toLocalDate()}"></td>
+        <td>
+            <i th:text="${assessment.createdBy.username}"></i>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    // Automatically trigger the browser's print dialog
+    window.onload = function() {
+        window.print();
+    };
+</script>
+</body>
+</html>

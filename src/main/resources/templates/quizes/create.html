@@ -1,0 +1,1242 @@
+<div class="container-fluid flex-grow-1">
+    <div class="card shadow-lg">
+        <div class="card-front">
+            <div class="card-header bg-primary text-white d-flex">
+                <div class="d-flex justify-content-center flex-grow-1">
+                    <h3 class="card-title mb-0 text-center">Create Quiz</h3>
+                </div>
+                <button id="create-with-AI" type="button" class="btn btn-ai">AI
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/quizes/create}" th:object="${quiz}" method="post" class="needs-validation"
+                      novalidate>
+
+                    <h5 class="text-primary">Quiz Information</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-1">
+                            <label for="quizName" class="form-label fw-bold">Quiz Name</label>
+                            <input type="text" id="quizName" th:field="*{name}" class="form-control"
+                                   placeholder="Enter quiz name" required>
+                            <div class="invalid-feedback">Quiz name is required.</div>
+                        </div>
+                        <div class="col-md-6 mb-1">
+                            <label for="quizDescription" class="form-label fw-bold">Description</label>
+                            <input type="text" id="quizDescription" th:field="*{description}" class="form-control"
+                                   placeholder="Enter quiz description" required>
+                            <div class="invalid-feedback">Quiz description is required.</div>
+                        </div>
+                    </div> <!-- Đóng đúng thẻ row -->
+
+                    <h5 class="text-primary mt-2 mb-1">Schedule</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-1">
+                            <label for="startTime" class="form-label fw-bold">Start Time</label>
+                            <input type="datetime-local" id="startTime" th:field="*{startTime}"
+                                   th:value="${param.startTime != null ? param.startTime : #temporals.format(quiz.startTime, 'yyyy-MM-dd''T''HH:mm')}"
+                                   class="form-control" required>
+                            <div class="invalid-feedback">Start time is required.</div>
+                            <div class="text-danger" th:if="${startTimeError}" th:text="${startTimeError}"></div>
+                        </div>
+                        <div class="col-md-6 mb-1">
+                            <label for="endTime" class="form-label fw-bold">End Time</label>
+                            <input type="datetime-local" id="endTime" th:field="*{endTime}"
+                                   th:value="${param.endTime != null ? param.endTime : #temporals.format(quiz.endTime, 'yyyy-MM-dd''T''HH:mm')}"
+                                   class="form-control" required>
+                            <div class="invalid-feedback">End time is required.</div>
+                            <div class="text-danger" th:if="${endTimeError}" th:text="${endTimeError}"></div>
+                        </div>
+                    </div> <!-- Đóng đúng thẻ row -->
+
+                    <h5 class="text-primary mt-2 mb-1">Quiz Settings</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-1">
+                            <label for="course" class="form-label fw-bold">Course</label>
+                            <select id="course" th:field="*{course}" class="form-select" required>
+                                <option value="" disabled selected>-- Select a Course --</option>
+                                <option th:each="course : ${courses}" th:value="${course.getId()}"
+                                        th:text="${course.getName()}"></option>
+                            </select>
+                            <div class="invalid-feedback">Course is required.</div>
+                        </div>
+                        <div class="col-md-6 mb-1">
+                            <label for="attemptLimit" class="form-label fw-bold">Attempt Limit</label>
+                            <input type="number" id="attemptLimit" th:field="*{attemptLimit}" class="form-control"
+                                   placeholder="Enter attempt limit" min="1" required>
+                            <div class="invalid-feedback">Attempt limit is required and must be at least 1.</div>
+                        </div>
+                    </div> <!-- Đóng đúng thẻ row -->
+
+                    <div class="row">
+                        <div class="col-md-6 mb-1">
+                            <label for="quizType" class="form-label fw-bold">Quiz Type</label>
+                            <select id="quizType" th:field="*{quizCategory}" class="form-select" required>
+                                <option value="" disabled selected>-- Select Quiz Type --</option>
+                                <option value="EXAM">Exam</option>
+                                <option value="PRACTICE">Practice</option>
+                            </select>
+                            <div class="invalid-feedback">Quiz type is required.</div>
+                        </div>
+                        <div class="col-md-6 mb-1">
+                            <label for="createdBy" class="form-label fw-bold">Created By</label>
+                            <div id="createdBy" class="border p-2 rounded bg-light">
+                                <span th:text="${user.username}"></span>
+                            </div>
+                            <input type="hidden" th:field="*{createdBy}" th:value="${user.id}"/>
+                        </div>
+                    </div> <!-- Đóng đúng thẻ row -->
+
+                    <h5 class="text-primary mt-2 mb-1">Tags</h5>
+                    <div class="row">
+                        <div class="col-md-12 mb-1">
+                            <button type="button" class="btn btn-secondary mt-2" data-bs-toggle="modal"
+                                    data-bs-target="#tagsModal">
+                                Manage Tags
+                            </button>
+                            <span id="selectedTagsCount" class="ms-2 text-muted"></span>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Save</button>
+                        <a th:href="@{/quizes}" class="btn btn-secondary btn-lg ms-3">Back to List</a>
+                    </div>
+
+                </form> <!-- Đóng đúng thẻ form -->
+
+                <!-- Thông báo lỗi / thành công -->
+                <div th:if="${error}" class="alert alert-danger mt-3" th:text="${error}"></div>
+                <div th:if="${success}" class="alert alert-success mt-3" th:text="${success}"></div>
+            </div>
+        </div>
+
+        <div class="card-back">
+            <div class="card-header bg-primary text-white d-flex">
+                <button id="create-manual" type="button" class="btn btn-ai">
+                    <i class="bi bi-arrow-left"></i>
+                    Manual
+                </button>
+                <div class="d-flex justify-content-center flex-grow-1">
+                    <h3 class="card-title mb-0">Create Quiz</h3>
+                </div>
+            </div>
+            <div id="AIGenerateResult" class="card-body show-generate-question">
+                <!-- show AI generate result here -->
+
+            </div>
+            <div class="card-footer">
+                <form id="AIGenerateForm" method="post" class="needs-validation" novalidate>
+                    <!-- Warning -->
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            <input type="text" id="warning" name="warning" th:value="${warning}"
+                                   class="form-control alert alert-warning mb-0 text-center disabled">
+                        </div>
+                    </div>
+
+                    <!-- Input form -->
+                    <div class="row mt-2">
+                        <div class="col-md-4">
+                            <label class="form-label" for="type">Question Type</label>
+                            <select class="form-select" id="type" name="type" onchange="handleTypeChange()">
+                                <option th:each="type :${types}" th:value="${type}"
+                                        th:text="${type}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label" for="questionDescription">Question Description</label>
+                            <input class="form-control" type="text" id="questionDescription"
+                                   name="questionDescription" placeholder="Enter description">
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label" for="numOfQuestions">Number of Question</label>
+                            <input class="form-control" type="number" id="numOfQuestions" name="numOfQuestions"
+                                   placeholder="Enter a number between 1 and 50"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="numOfAnswerOptions">Number of Answer Options</label>
+                            <select class="form-select" id="numOfAnswerOptions" name="numOfAnswerOptions"
+                                    aria-label="Enter number of answer options">
+                                <option th:each="answerOption : ${numOfAnswerOptions}" th:value="${answerOption}"
+                                        th:text="${answerOption}"></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Button -->
+                    <div class="row mt-3">
+                        <div class="col-md-12 d-flex justify-content-end gap-3">
+                            <button id="viewAllButton" type="button" class="btn btn-secondary btn-md d-none"
+                                    data-bs-toggle="modal" data-bs-target="#viewAllQuestion">View All
+                            </button>
+                            <button id="AIgenerate" type="submit" class="btn btn-primary btn-md">Generate</button>
+                            <audio id="notificationSound"
+                                   src="https://cdn.pixabay.com/audio/2024/11/27/audio_9d1bdc20b1.mp3"
+                                   preload="auto"></audio>
+                            <a th:href="@{/quizes}" class="btn btn-secondary btn-md">Back to List</a>
+                        </div>
+                    </div>
+
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for managing tags -->
+<div class="modal fade" id="tagsModal" tabindex="-1" aria-labelledby="tagsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="tagsModalLabel">
+                    <i class="fas fa-tags me-2"></i>Manage Tags
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Left column: Search and Create -->
+                    <div class="col-md-5 border-end">
+                        <!-- Create New Tag -->
+                        <form th:action="@{/quizes/tags/create}" method="post" id="createTagForm" class="mb-4"
+                              onsubmit="createTag(event)">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="tagName" name="name"
+                                       placeholder="New tag name" required>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Search Tags -->
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="searchTags"
+                                       placeholder="Search tags" oninput="searchTags()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right column: Tags List -->
+                    <div class="col-md-7">
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-danger" onclick="deleteSelectedTags()"
+                                    id="deleteSelectedBtn" disabled>
+                                <i class="fas fa-trash-alt me-1"></i>Delete Selected
+                                <span class="badge bg-light text-danger ms-1" id="selectedCount">0</span>
+                            </button>
+                        </div>
+
+                        <div class="tags-scroll" style="max-height: 400px; overflow-y: auto;">
+                            <div id="tagsContainer" class="d-flex flex-wrap gap-2">
+                                <div th:each="tag : ${tags}" class="tag-item">
+                                    <div class="d-flex align-items-center bg-light rounded p-2">
+                                        <div class="form-check mb-0">
+                                            <input class="form-check-input tag-checkbox" type="checkbox"
+                                                   th:id="'tag-' + ${tag.id}"
+                                                   th:name="tagIds"
+                                                   th:value="${tag.id}"
+                                                   onchange="updateDeleteButton()">
+                                            <label class="form-check-label"
+                                                   th:for="'tag-' + ${tag.id}"
+                                                   th:text="${tag.name}">
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveSelectedTags()">
+                    <i class="fas fa-check me-1"></i>Done
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewAllQuestion" tabindex="-1" aria-labelledby="questionViewLabel" aria-modal="true"
+     role="dialog">
+    <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+        <div class="modal-content question-view-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="questionViewLabel">Question</h1>
+            </div>
+            <div class="modal-body" id="questionViewModal">
+                <!-- Show list of question here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-md" data-bs-dismiss="modal" id="closeQuestionModal">
+                    Close
+                </button>
+                <button type="button" class="btn btn-primary btn-md" id="saveChangeQuestionModal"
+                        data-bs-dismiss="modal">Save changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+    .question-view-content {
+
+    }
+
+    .tag-item {
+        transition: all 0.3s ease;
+    }
+
+    .tag-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .tags-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .tags-scroll::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .tags-scroll::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+
+    .tags-scroll::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    .correct {
+        background-color: #d9f7d9;
+        color: #1cbba9;
+    }
+
+    .btn-ai {
+        --bs-btn-color: #fff;
+        --bs-btn-bg: #0d6efd;
+        --bs-btn-border-color: #fff;
+        --bs-btn-hover-color: #0d6efd;
+        --bs-btn-hover-bg: #fff;
+        --bs-btn-hover-border-color: #fff;
+        --bs-btn-focus-shadow-rgb: 49, 132, 253;
+        --bs-btn-active-color: #fff;
+        --bs-btn-active-bg: #0a58ca;
+        --bs-btn-active-border-color: #0a53be;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #fff;
+        --bs-btn-disabled-bg: #0d6efd;
+        --bs-btn-disabled-border-color: #0d6efd;
+    }
+
+    .btn-clear {
+        --bs-btn-color: #dc3545;
+        --bs-btn-bg: #fff;
+        --bs-btn-border-color: #dc3545;
+        --bs-btn-hover-color: #fff;
+        --bs-btn-hover-bg: #dc3545;
+        --bs-btn-hover-border-color: #dc3545;
+        --bs-btn-focus-shadow-rgb: 225, 83, 97;
+        --bs-btn-active-color: #fff;
+        --bs-btn-active-bg: #b02a37;
+        --bs-btn-active-border-color: #a52834;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #fff;
+        --bs-btn-disabled-bg: #dc3545;
+        --bs-btn-disabled-border-color: #dc3545;
+    }
+
+    .container-fluid {
+        perspective: 5000px;
+    }
+
+    .card {
+        transition: transform 0.8s;
+        transform-style: preserve-3d;
+    }
+
+    .card-front, .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+    }
+
+    .card-back {
+        transform: rotateY(180deg);
+    }
+
+    .show-generate-question {
+        height: 36vh;
+        overflow-y: auto;
+    }
+
+    .optionText-input {
+        transition: transform 0.7s;
+    }
+
+    .input-group-option {
+        display: inline-block;
+        perspective: 5000px;
+    }
+
+    .flippedX {
+        transform: rotateX(360deg);
+    }
+
+    .disabled {
+        pointer-events: none;
+    }
+
+
+    .tag-item {
+        transition: all 0.3s ease;
+    }
+
+    .tag-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .tags-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .tags-scroll::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .tags-scroll::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+
+    .tags-scroll::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    .correct {
+        background-color: #d9f7d9;
+        color: #1cbba9;
+    }
+
+    .btn-ai {
+        --bs-btn-color: #fff;
+        --bs-btn-bg: #0d6efd;
+        --bs-btn-border-color: #fff;
+        --bs-btn-hover-color: #0d6efd;
+        --bs-btn-hover-bg: #fff;
+        --bs-btn-hover-border-color: #fff;
+        --bs-btn-focus-shadow-rgb: 49, 132, 253;
+        --bs-btn-active-color: #fff;
+        --bs-btn-active-bg: #0a58ca;
+        --bs-btn-active-border-color: #0a53be;
+        --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+        --bs-btn-disabled-color: #fff;
+        --bs-btn-disabled-bg: #0d6efd;
+        --bs-btn-disabled-border-color: #0d6efd;
+    }
+
+    .container-fluid {
+        perspective: 5000px;
+    }
+
+    .card {
+        transition: transform 0.8s;
+        transform-style: preserve-3d;
+    }
+
+    .card-front, .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+    }
+
+    .card-back {
+        transform: rotateY(180deg);
+    }
+
+    .show-generate-question {
+        height: 36vh;
+        overflow-y: auto;
+    }
+
+    .disabled {
+        pointer-events: none;
+    }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    function searchTags() {
+        const query = document.getElementById('searchTags').value.trim();
+        const tagsContainer = document.getElementById('tagsContainer');
+
+        // Show loading state
+        tagsContainer.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+
+        // Fetch tags based on search query
+        fetch(`/quizes/tags/search?name=${encodeURIComponent(query)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(tags => {
+                tagsContainer.innerHTML = '';
+
+                if (!tags || tags.length === 0) {
+                    tagsContainer.innerHTML = `
+                <div class="alert alert-info w-100">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No tags found matching "${query}"
+                </div>`;
+                    return;
+                }
+
+                // Lưu trữ trạng thái checked của các tag hiện tại
+                const checkedTags = new Set();
+                document.querySelectorAll('.tag-checkbox:checked').forEach(checkbox => {
+                    checkedTags.add(checkbox.value);
+                });
+
+                tags.forEach(tag => {
+                    if (tag && tag.id) {
+                        const sanitizedName = tag.name
+                            ? tag.name.replace(/[<>]/g, '')
+                            : 'Unnamed Tag';
+
+                        const isChecked = checkedTags.has(tag.id.toString());
+
+                        tagsContainer.innerHTML += `
+                    <div class="tag-item">
+                        <div class="d-flex align-items-center bg-light rounded p-2">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input tag-checkbox" type="checkbox"
+                                       id="tag-${tag.id}" name="tagIds" value="${tag.id}"
+                                       onchange="updateDeleteButton()"
+                                       ${isChecked ? 'checked' : ''}>
+                                <label class="form-check-label" for="tag-${tag.id}">
+                                    ${sanitizedName}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                    }
+                });
+                updateDeleteButton();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                tagsContainer.innerHTML = `
+            <div class="alert alert-danger w-100">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Unable to load tags. Please try refreshing the page.
+            </div>`;
+            });
+    }
+
+    function deleteTag(tagId) {
+        fetch(`/quizes/tags/delete/${tagId}`, {
+            method: 'DELETE'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(text);
+                    });
+                }
+                return response.text();
+            })
+            .then(message => {
+                // Tạo thông báo thành công
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>
+            Tag deleted successfully
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+                // Thêm thông báo vào modal body
+                const modalBody = document.querySelector('.modal-body');
+                modalBody.insertBefore(alertDiv, modalBody.firstChild);
+
+                // Tự động ẩn thông báo sau 3 giây
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 3000);
+
+                searchTags(); // Refresh the tag list
+            })
+            .catch(error => {
+                // Hiển thị thông báo lỗi
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-circle me-2"></i>
+            Cannot delete this tag because it is being used in one or more quizzes
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+                const modalBody = document.querySelector('.modal-body');
+                modalBody.insertBefore(alertDiv, modalBody.firstChild);
+
+                // Tự động ẩn thông báo sau 5 giây
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 5000);
+            });
+    }
+
+    function createTag(event) {
+        event.preventDefault();
+        const formData = new FormData(document.getElementById('createTagForm'));
+        fetch('/quizes/tags/create', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.text())
+            .then(message => {
+                // Tạo thông báo thành công
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
+            <strong>Success!</strong> Tag created successfully.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+                // Thêm thông báo vào modal body
+                const modalBody = document.querySelector('.modal-body');
+                modalBody.insertBefore(alertDiv, modalBody.firstChild);
+
+                // Tự động ẩn thông báo sau 3 giây
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 3000);
+
+                document.getElementById('tagName').value = ''; // Xóa input
+                searchTags(); // Làm mới danh sách tag
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Hiển thị thông báo lỗi nếu có
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.innerHTML = `
+            <strong>Error!</strong> Failed to create tag.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+                const modalBody = document.querySelector('.modal-body');
+                modalBody.insertBefore(alertDiv, modalBody.firstChild);
+            });
+    }
+
+    function saveSelectedTags() {
+        const selectedTags = Array.from(document.querySelectorAll('input[name="tagIds"]:checked'))
+            .map(checkbox => ({
+                id: checkbox.value,
+                name: checkbox.nextElementSibling.textContent.trim()
+            }));
+
+        // Store the selected tags in a hidden input field in the main form
+        let hiddenInput = document.getElementById('selectedTagsInput');
+        if (!hiddenInput) {
+            hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'tagIds';
+            hiddenInput.id = 'selectedTagsInput';
+            document.querySelector('form').appendChild(hiddenInput);
+        }
+        hiddenInput.value = selectedTags.map(tag => tag.id);
+
+        // Update selected tags display
+        const countDisplay = document.getElementById('selectedTagsCount');
+        if (selectedTags.length > 0) {
+            const tagsList = selectedTags.map(tag =>
+                `<span class="badge bg-secondary me-1">${tag.name}</span>`
+            ).join('');
+            countDisplay.innerHTML = tagsList;
+        } else {
+            countDisplay.innerHTML = '';
+        }
+
+        // Đóng modal sử dụng Bootstrap data-bs-dismiss
+        const closeButton = document.querySelector('#tagsModal .btn-secondary[data-bs-dismiss="modal"]');
+        if (closeButton) {
+            closeButton.click();
+        }
+    }
+
+    // Thêm hàm mới để cập nhật trạng thái nút Delete Selected
+    function updateDeleteButton() {
+        const selectedTags = document.querySelectorAll('.tag-checkbox:checked');
+        const deleteBtn = document.getElementById('deleteSelectedBtn');
+        const selectedCount = document.getElementById('selectedCount');
+
+        deleteBtn.disabled = selectedTags.length === 0;
+        selectedCount.textContent = selectedTags.length;
+    }
+
+    // Thay thế hàm deleteSelectedTags hiện tại
+    async function deleteSelectedTags() {
+        const selectedTags = Array.from(document.querySelectorAll('.tag-checkbox:checked'))
+            .map(checkbox => ({
+                id: checkbox.value,
+                name: checkbox.nextElementSibling.textContent.trim()
+            }));
+
+        if (selectedTags.length === 0) return;
+
+        if (!confirm(`Are you sure you want to delete ${selectedTags.length} selected tags?`)) {
+            return;
+        }
+
+        // Kiểm tra trước tất cả các tag được chọn
+        try {
+            for (const tag of selectedTags) {
+                const checkResponse = await fetch(`/quizes/tags/check/${tag.id}`);
+                const checkResult = await checkResponse.json();
+
+                if (checkResult.isUsed) {
+                    // Nếu có bất kỳ tag nào đang được sử dụng, hiển thị thông báo và dừng
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                    alertDiv.innerHTML = `
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Cannot proceed with deletion:</strong><br>
+                    Tag '${tag.name}' is being used in one or more quizzes.<br>
+                    <small class="mt-2">No tags will be deleted to maintain data integrity.</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+
+                    const modalBody = document.querySelector('.modal-body');
+                    modalBody.insertBefore(alertDiv, modalBody.firstChild);
+                    setTimeout(() => alertDiv.remove(), 8000);
+                    return; // Dừng toàn bộ quá trình xóa
+                }
+            }
+
+            // Nếu tất cả các tag đều an toàn để xóa, tiến hành xóa
+            let successCount = 0;
+            for (const tag of selectedTags) {
+                const response = await fetch(`/quizes/tags/delete/${tag.id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    successCount++;
+                }
+            }
+
+            // Hiển thị thông báo thành công
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>
+            Successfully deleted ${successCount} tags
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+            const modalBody = document.querySelector('.modal-body');
+            modalBody.insertBefore(alertDiv, modalBody.firstChild);
+            setTimeout(() => alertDiv.remove(), 3000);
+
+            // Refresh tag list
+            searchTags();
+            updateDeleteButton();
+
+        } catch (error) {
+            // Hiển thị thông báo lỗi chung
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+            alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong>Error:</strong> Unable to process tag deletion.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+
+            const modalBody = document.querySelector('.modal-body');
+            modalBody.insertBefore(alertDiv, modalBody.firstChild);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+    }
+
+    // Add card flip functionality
+    document.getElementById('create-with-AI').addEventListener('click', function () {
+        document.getElementsByClassName('card').item(0).style.transform = 'rotateY(180deg)';
+    });
+
+    document.getElementById('create-manual').addEventListener('click', function () {
+        document.getElementsByClassName('card').item(0).style.transform = 'rotateY(0deg)';
+    });
+
+    // Handle question type changes
+    function handleTypeChange() {
+        var type = document.getElementById('type').value;
+        var numOfAnswerOptions = document.getElementById('numOfAnswerOptions');
+        switch (type) {
+            case "Single Choice Question":
+                numOfAnswerOptions.disabled = false;
+                break;
+            case "True/False Question":
+                numOfAnswerOptions.disabled = true;
+                numOfAnswerOptions.value = '2';
+                break;
+        }
+    }
+
+    // Add number of questions range validation
+    document.getElementById('numOfQuestions').addEventListener('change', function () {
+        if (this.value < 1) {
+            this.value = 1;
+        } else if (this.value > 50) {
+            this.value = 50;
+        }
+    });
+
+    // Add AJAX form submission
+    $(document).ready(function () {
+        $('#AIGenerateForm').on('submit', function (event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+            var button = $('#AIgenerate');
+
+            button.html(`
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span class="" role="status">Generating...</span>
+        `);
+            button.addClass("disabled");
+
+            $.ajax({
+                type: 'POST',
+                url: '/quizes/create/AI',
+                data: formData,
+                success: function (response) {
+
+                    // làm trống khu vực hiển thị kết quả
+                    $('#AIGenerateResult').empty();
+
+                    if (response != null) {
+                        // Lặp qua danh sách câu hỏi từ response
+                        response.forEach((question, index) => {
+                            var containerQuestion = `
+                                <div class="card mb-4 shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="fw-bold">Question ${index + 1}</h5>
+                                        <input type="text" class="p-3 border rounded form-control" name="questionText"
+                                        value="${question.questionText}" style="background-color: #F0F0F0"/>
+                                        <ul class="list-group mt-3">
+    `;
+                            // Loop through answer options
+                            question.answerOptions.forEach(option => {
+                                containerQuestion += `
+                                            <li class="list-group-item">
+                                                <input type="text" name="answerOptions[${index}].optionText" class="form-control optionText-input ${option.isCorrect ? 'correct' : ''}"
+                                                    value="${option.optionText}" id="optionText[${index}]"/>
+                                            </li>
+        `;
+                            });
+
+                            // Close the card and UL
+                            containerQuestion += `
+                                        </ul>
+                                    </div>
+                                </div>
+    `;
+
+                            // Append the generated HTML to a container in your DOM
+                            document.getElementById('AIGenerateResult').innerHTML += containerQuestion;
+                        });
+                    } else {
+                        document.getElementById('AIGenerateResult').innerHTML = `
+                                <input type="text" id="response" name="response"
+                                value="No response from AI" className="form-control disabled"/>
+                               `;
+                    }
+
+                    var notificationSound = document.getElementById("notificationSound");
+                    notificationSound.play();
+                    button.html('Generate');
+                    button.removeClass("disabled");
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error: ' + error);
+
+                    // làm trống khu vực hiển thị kết quả
+                    $('#AIGenerateResult').empty();
+
+                    document.getElementById('AIGenerateResult').innerHTML = `
+                <input type="text" id="response" name="response" wrap="hard"
+                       value="${error}" class="form-control disabled"/>
+                `;
+
+                    var notificationSound = document.getElementById("notificationSound");
+                    notificationSound.play();
+                    button.html('Generate');
+                    button.removeClass("disabled");
+                }
+            });
+        });
+    });
+
+
+    // Add card flip functionality
+    document.getElementById('create-with-AI').addEventListener('click', function () {
+        document.getElementsByClassName('card').item(0).style.transform = 'rotateY(180deg)';
+    });
+
+    document.getElementById('create-manual').addEventListener('click', function () {
+        document.getElementsByClassName('card').item(0).style.transform = 'rotateY(0deg)';
+    });
+
+    // Handle question type changes
+    function handleTypeChange() {
+        var type = document.getElementById('type').value;
+        var numOfAnswerOptions = document.getElementById('numOfAnswerOptions');
+        switch (type) {
+            case "Single Choice Question":
+                numOfAnswerOptions.disabled = false;
+                break;
+            case "True/False Question":
+                numOfAnswerOptions.disabled = true;
+                numOfAnswerOptions.value = '2';
+                break;
+        }
+    }
+
+    // Add number of questions range validation
+    document.getElementById('numOfQuestions').addEventListener('change', function () {
+        if (this.value < 1) {
+            this.value = 1;
+        } else if (this.value > 50) {
+            this.value = 50;
+        }
+    });
+
+    // submit to AI generate
+    $(document).ready(function () {
+        $('#AIGenerateForm').on('submit', function (event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+            var button = $('#AIgenerate');
+            var viewall = document.getElementById('viewAllButton');
+
+            viewall.classList.add('d-none');
+
+            button.html(`
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+            <span class="" role="status">Generating...</span>
+        `);
+            button.addClass("disabled");
+
+            $.ajax({
+                type: 'POST',
+                url: '/quizes/create/AI',
+                data: formData,
+                success: function (response) {
+
+                    viewall.classList.remove('d-none');
+
+                    // làm trống khu vực hiển thị kết quả
+                    $('#AIGenerateResult').empty();
+
+                    if (response != null) {
+                        // Lặp qua danh sách câu hỏi từ response
+                        response.forEach((question, index) => {
+                            var containerQuestion = `
+                                <div class="card mb-4 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h5 class="fw-bold">Question ${index + 1}</h5>
+                                            <button type="button" class="btn btn-clear btn-sm">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                        <input type="text" class="dynamicInput p-3 border rounded form-control" name="questionText[${index}]"
+                                        value="${question.questionText}" style="background-color: #F0F0F0"/>
+                                        <input type="hidden" name="questionType[${index}]" value="${question.questionType}"/>
+                                        <ul class="list-group mt-3">
+                            `;
+                            // Loop through answer options
+                            question.answerOptions.forEach((option, number) => {
+                                containerQuestion += `
+                                            <li class="list-group-item input-group-option">
+                                                <input type="text" name="answerOptions[${index}].optionText[${number}]" class="dynamicInput form-control optionText-input ${option.isCorrect ? 'correct' : ''}"
+                                                    value="${option.optionText}" id="optionText[${number}]" onwheel="handleWheelInput(event, this)"/>
+                                                <input type="checkbox" name="answerOptions[${index}].isCorrect[${number}]" value="${option.isCorrect ? 'true' : 'false'}" ${option.isCorrect ? 'checked' : ''}
+                                                id="isCorrect[${number}]" class="d-none"/>
+                                            </li>
+                                `;
+                            });
+
+                            // Close the card and UL
+                            containerQuestion += `
+                                        </ul>
+                                    </div>
+                                </div>
+                            `;
+
+                            // Append the generated HTML to a container in your DOM
+                            document.getElementById('AIGenerateResult').innerHTML += containerQuestion;
+                        });
+                    } else {
+                        document.getElementById('AIGenerateResult').innerHTML = `
+                                <input type="text" id="response" name="response"
+                                value="No response from AI" className="form-control disabled"/>
+                               `;
+                    }
+
+                    var notificationSound = document.getElementById("notificationSound");
+                    notificationSound.play();
+                    button.html('Generate');
+                    button.removeClass("disabled");
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error: ' + error);
+
+                    // làm trống khu vực hiển thị kết quả
+                    $('#AIGenerateResult').empty();
+
+                    document.getElementById('AIGenerateResult').innerHTML = `
+                <input type="text" id="response" name="response" wrap="hard"
+                       value="${error}" class="form-control disabled"/>
+                `;
+
+                    var notificationSound = document.getElementById("notificationSound");
+                    notificationSound.play();
+                    button.html('Generate');
+                    button.removeClass("disabled");
+                }
+            });
+        });
+    });
+
+    function sendQuizdata(event) {
+        event.preventDefault(); // Ngăn hành vi submit mặc định
+
+        // Lấy dữ liệu từ quizForm
+        const quizForm = new FormData(document.getElementById("quizForm"));
+        const questionForm = document.querySelectorAll("#AIGenerateResult input");
+
+        const quizData = {
+            name: quizForm.get("name"),
+            description: quizForm.get("description"),
+            startTime: quizForm.get("startTime"),
+            endTime: quizForm.get("endTime"),
+            course: quizForm.get("course"),
+            attemptLimit: quizForm.get("attemptLimit"),
+            quizCategory: quizForm.get("quizCategory"),
+            createdBy: quizForm.get("createdBy"),
+            questions: [], // Mảng chứa các câu hỏi
+        };
+
+        // Thu thập dữ liệu các câu hỏi và câu trả lời
+        const options = {}; // Lưu trữ tạm thời các options theo index
+        const questions = {};
+
+        questionForm.forEach((input) => {
+            // Thu thập dữ liệu cho câu hỏi
+            if (input.name.includes("questionText") || input.name.includes("questionType")) {
+                const match = input.name.match(/questionText\[(\d+)\]|questionType\[(\d+)\]/);
+                if (match) {
+                    const index = match[1] || match[2]; // Lấy index
+                    if (!questions[index]) {
+                        questions[index] = {
+                            questionText: "",
+                            questionType: "",
+                            answerOptions: []
+                        };
+                    }
+                    if (input.name.includes("questionText")) {
+                        questions[index].questionText = input.value;
+                    }
+                    if (input.name.includes("questionType")) {
+                        questions[index].questionType = input.value;
+                    }
+                }
+            }
+
+            // Thu thập dữ liệu cho các answerOptions
+            if (input.name.includes("answerOptions")) {
+                const match = input.name.match(/answerOptions\[(\d+)\]\.(\w+)\[(\d+)\]/);
+                if (match) {
+                    const questionIndex = match[1]; // Index của câu hỏi
+                    const field = match[2]; // Tên trường: optionText hoặc isCorrect
+                    const optionIndex = match[3]; // Thứ tự của option
+
+                    if (!questions[questionIndex].answerOptions[optionIndex]) {
+                        questions[questionIndex].answerOptions[optionIndex] = {};
+                    }
+
+                    // Gán giá trị vào đúng trường
+                    questions[questionIndex].answerOptions[optionIndex][field] =
+                        field === "isCorrect" ? (input.value === "true") : input.value;
+                }
+            }
+        });
+
+        // Chuyển đổi questions thành mảng
+        Object.values(questions).forEach((question) => {
+            question.answerOptions = Object.values(question.answerOptions); // Chuyển options thành mảng
+            quizData.questions.push(question); // Thêm từng câu hỏi vào quizData
+        });
+
+        console.log(JSON.stringify(quizData)); // Kiểm tra dữ liệu thu thập được
+
+        // Gửi dữ liệu bằng fetch
+        fetch("/quizes/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(quizData),
+        })
+            .then((response) => {
+                if (response.ok) {
+                    window.location.href = "/quizes";
+                } else {
+                    console.error(response);
+                    alert("Có lỗi xảy ra!");
+                }
+            })
+            .catch((error) => console.error("Error:", error));
+    }
+
+    let isThrottled = false;
+
+    function handleWheelInput(event, input) {
+        event.preventDefault();
+
+        if (isThrottled) return; // Nếu đang trong thời gian chờ, bỏ qua sự kiện
+
+        isThrottled = true;
+        setTimeout(() => {
+            isThrottled = false; // Cho phép sự kiện tiếp theo sau khoảng thời gian nhất định
+        }, 800); // Thời gian chờ (200ms), bạn có thể điều chỉnh
+
+        // Lấy ID của input text
+        const name = input.name; //answerOptions[${index}].optionText[${number}]
+        // lấy index của input
+        const match = name.match(/answerOptions\[(\d+)\].optionText\[(\d+)\]/);
+        const questionIndex = match[1];
+        const optionIndex = match[2];
+
+        console.log("====================================");
+        // Lấy checkbox tương ứng
+        const checkbox = document.querySelector(`input[type="checkbox"][name="answerOptions[${questionIndex}].isCorrect[${optionIndex}]"]`);
+        console.log(checkbox.value);
+        console.log(checkbox.checked);
+
+        if (!checkbox.checked) {
+            // Chỉ giữ class `correct` cho input tương ứng với checkbox đang được chọn
+            checkbox.checked = true;
+            input.classList.add('correct');
+            input.classList.remove('flippedX');
+            checkbox.value = "true";
+            // Nếu checkbox này được chọn
+            // Lấy tất cả các checkbox và input khác
+            const allCheckboxes = document.querySelectorAll(`input[type="checkbox"][name*="answerOptions[${questionIndex}]"]`);
+            console.log(allCheckboxes);
+
+            // Đặt tất cả các checkbox khác về false và cập nhật class của input
+            allCheckboxes.forEach((cb, index) => {
+                if (cb !== checkbox) {
+                    cb.checked = false;
+                    cb.value = "false";
+
+                    const relatedInput = document.querySelector(`input[type="text"][name="answerOptions[${questionIndex}].optionText[${index}]"]`);
+                    console.log(relatedInput);
+                    if (relatedInput) {
+                        relatedInput.classList.remove('correct');
+                        relatedInput.classList.add('flippedX');
+                    }
+                }
+            });
+        }
+    }
+
+    let AIGenerateOrigin = "";
+
+    // nút mở modal view all
+    document.getElementById("viewAllButton").addEventListener('click', function () {
+        const sourceElement = document.getElementById('AIGenerateResult'); // lấy nội dung trong AIGenerateResult
+        const cloneElement = sourceElement.cloneNode(true); // Sao chép toàn bộ nội dung và sự kiện
+        document.getElementById('questionViewModal').innerHTML = cloneElement.innerHTML; // gán nội dung đã sao chép vào modal
+        AIGenerateOrigin = cloneElement.innerHTML; // lưu bản sao của AIGenerateResult
+        document.getElementById('AIGenerateResult').innerHTML = ""; // làm rỗng AIGenerateResult để thực hiện chức năng trong modal
+    });
+
+    // nút save change trong modal view all
+    document.getElementById("saveChangeQuestionModal").addEventListener('click', function () {
+        const sourceElement = document.getElementById('questionViewModal'); // lấy nội dung trong questionViewModal
+        const cloneElement = sourceElement.cloneNode(true); // Sao chép toàn bộ nội dung và sự kiện
+        document.getElementById('AIGenerateResult').appendChild(cloneElement); // gán nội dung vào AIGenerateResult
+        document.getElementById('questionViewModal').value = ""; // làm rỗng modal
+        AIGenerateOrigin = ""; // làm rỗng origin
+    });
+
+    // nút close trong modal view all
+    document.getElementById("closeQuestionModal").addEventListener('click', function () {
+        document.getElementById('AIGenerateResult').innerHTML = AIGenerateOrigin; // gán dữ liệu từ origin vào AIGenerateResult
+        document.getElementById('questionViewModal').value = ""; // làm rỗng modal
+        AIGenerateOrigin = ""; // làm rỗng origin
+    });
+
+    // chức năng delete các câu hỏi do AI generate
+    // Lắng nghe sự kiện click trên tất cả các nút "Delete"
+    document.addEventListener("click", function (event) {
+        if (event.target.closest(".btn-clear")) {
+            // Tìm thẻ <div class="card mb-4 shadow-sm"> chứa nút "Delete"
+            const card = event.target.closest(".card.mb-4.shadow-sm");
+            if (card) {
+                card.remove(); // Xóa thẻ div này
+                updateQuestionNumbers(); // Cập nhật lại số thứ tự câu hỏi
+            }
+        }
+    });
+
+    // Hàm cập nhật lại số thứ tự câu hỏi
+    function updateQuestionNumbers() {
+        const questionCards = document.querySelectorAll(".card.mb-4.shadow-sm");
+        questionCards.forEach((card, index) => {
+            // Cập nhật tiêu đề Question
+            const questionTitle = card.querySelector("h5");
+            if (questionTitle) {
+                questionTitle.textContent = `Question ${index + 1}`; // Đánh lại số
+            }
+
+            // Cập nhật thuộc tính name của các input
+            const inputs = card.querySelectorAll("input");
+            inputs.forEach(input => {
+                input.name = input.name.replace(/\[\d+\]/, `[${index}]`); // Thay thế chỉ số
+            });
+
+            // Cập nhật lại các answerOptions
+            const answerOptions = card.querySelectorAll("input[name*='answerOptions']");
+            answerOptions.forEach(option => {
+                option.name = option.name.replace(/\[.*?\]/, `[${index}]`); // Cập nhật index
+            });
+        });
+    }
+
+
+</script>

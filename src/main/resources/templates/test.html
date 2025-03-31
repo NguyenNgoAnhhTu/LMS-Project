@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz Detail</title>
+</head>
+<body>
+    <h1>Review quiz</h1>
+    <div>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Question</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="question, iter : ${Questions}">
+                    <td th:text="${iter.count}"></td>
+                    <td><pre th:text="${question.questionText}"></pre></td>
+                </tr>
+            </tbody>
+        </table>
+        <!--<ul>
+            <li th:each="question : ${Questions}" <pre th:text="${question.questionText}"></pre>></li>
+        </ul>
+        <ul>
+            <li th:each="line : ${#strings.listSplit(codeString, '\n')}" th:text="${line}"></li>
+        </ul>-->
+    </div>
+
+    <div th:if="${Errors != null}">
+        <p class="alert alert-danger" th:text="${Errors}"></p>
+    </div>
+</body>
+</html>

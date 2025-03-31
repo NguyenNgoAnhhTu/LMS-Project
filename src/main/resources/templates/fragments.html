@@ -1,0 +1,274 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/1999/html">
+
+<head th:fragment="common_header(title, links)">
+    <title th:text="${title}">The LMS</title>
+    <!-- Common styles and scripts -->
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Video.js CSS -->
+    <link href="https://vjs.zencdn.net/8.0.4/video-js.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!--    <th:block th:replace="${links}"></th:block>-->
+    <link rel="stylesheet" th:href="${links}">
+    <style>
+        .scrollable-table {
+            overflow: auto;
+            max-height: 650px; /* Default for larger screens */
+        }
+
+        /* Adjust max-height for medium-sized screens */
+        @media (max-width: 1200px) {
+            .scrollable-table {
+                max-height: 500px;
+            }
+        }
+
+        /* Adjust max-height for small screens */
+        @media (max-width: 768px) {
+            .scrollable-table {
+                max-height: 400px;
+            }
+        }
+
+        /* Adjust max-height for extra small screens */
+        @media (max-width: 576px) {
+            .scrollable-table {
+                max-height: 300px;
+            }
+        }
+
+         #pdf-viewer {
+             width: 100%;
+             height: 100vh;
+             overflow: auto;
+             border: 1px solid #ccc;
+         }
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .bg-gradient {
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
+        }
+
+        .bg-opacity-50 {
+            opacity: 0.5;
+        }
+
+    </style>
+</head>
+
+<body>
+<!-- Header Fragment -->
+<div th:fragment="header">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">FSA</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav">
+
+                            <li class="nav-item active">
+                                <a class="nav-link" href="/">Home</a>
+                            </li>
+                            <li class="me-2">
+                                <a class="nav-link dropdown-toggle" href="#" id="changRole" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span th:text="'Role: ' + ${curr_role}"></span>
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="changRole" style="left: 100px;">
+                                    <li th:each="role : ${roles}">
+                                        <form action="/superadmin/switch-role" method="post" style="display: inline;">
+                                            <input type="hidden" name="newRole" th:value="${role}" />
+                                            <button class="dropdown-item" type="submit" th:text="${role}"></button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <!-- Dynamic Module Groups -->
+                            <li th:each="moduleGroup : ${moduleGroups}" class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="dropdownMenu{{moduleGroup.id}}" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span th:text="${moduleGroup.name}"></span>
+                                </a>
+                                <ul class="dropdown-menu" th:aria-labelledby="'dropdownMenu' + ${moduleGroup.id}">
+                                    <li th:each="module : ${moduleGroup.modules}">
+<!--                                        <a class="dropdown-item" th:href="${module.url}" th:text="${module.name}"></a>-->
+                                        <a class="dropdown-item" th:href="@{/{url}(url=${module.url})}" th:text="${module.name}"></a>
+                                    </li>
+                                    <li sec:authorize="isAuthenticated()" th:if="${'System'.equals(moduleGroup.name)}"><a class="dropdown-item" th:href="@{/logout}">Logout</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+        </div>
+    </nav>
+    <!-- Spacing for fixed-top header -->
+    <div style="height: 70px;"></div>
+</div>
+
+<!-- Footer Fragment -->
+<div th:fragment="footer">
+    <footer class="bg-light text-center py-3">
+        <p>&copy; 2025 FSA - Learning Management System</p>
+    </footer>
+</div>
+
+<!-- Modal Fragment -->
+<div th:fragment="alert-modal">
+
+</div>
+
+
+<!-- Scripts Fragment -->
+<div th:fragment="scripts">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script src="https://vjs.zencdn.net/8.0.4/video.min.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let urlParams = new URLSearchParams(window.location.search);
+            let openModal = urlParams.get("openModal");
+
+            if (openModal) {
+                let modalElement = document.getElementById(openModal);
+                if (modalElement) {
+                    let modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                }
+            }
+        });
+    </script>
+    <script>
+        // Variables
+        const fileUpload = document.querySelector('#fileUpload');
+        const fileCountSpan = document.querySelector('#fileCount');
+        const fileList = document.querySelector('#fileList');
+        const convertButton = document.querySelector('.btn-convert');
+        const responseMessage = document.querySelector('#responseMessage');
+        let selectedFiles = []; // Array to store selected files
+
+        // Restore previous file list from localStorage
+        if (localStorage.getItem('uploadedFiles')) {
+            selectedFiles = JSON.parse(localStorage.getItem('uploadedFiles'));
+            selectedFiles.forEach(file => addFileToList(file.name));
+            fileCountSpan.textContent = selectedFiles.length;
+        }
+
+        // Clear localStorage when page reloads
+        window.addEventListener('beforeunload', () => localStorage.removeItem('uploadedFiles'));
+
+        // Handle Browse Files button click
+        document.querySelector('.btn-browse').addEventListener('click', (event) => {
+            event.preventDefault();
+            fileUpload.click();
+        });
+
+        // Handle file input change
+        fileUpload.addEventListener('change', function () {
+            const newFiles = Array.from(fileUpload.files).filter(file =>
+                !selectedFiles.some(selected => selected.name === file.name && selected.lastModified === file.lastModified)
+            );
+
+            selectedFiles = [...selectedFiles, ...newFiles];
+
+            // Update the file list and count
+            newFiles.forEach(file => addFileToList(file.name));
+            fileCountSpan.textContent = selectedFiles.length;
+
+            // Save to localStorage
+            localStorage.setItem('uploadedFiles', JSON.stringify(selectedFiles));
+        });
+
+        // Add file to the list DOM
+        function addFileToList(fileName) {
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+
+            // File details
+            listItem.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-file-earmark-excel file-icon"></i>
+                    <span>${fileName}</span>
+                </div>
+                <span class="remove-file">✕</span>
+            `;
+
+            // Add remove event
+            listItem.querySelector('.remove-file').addEventListener('click', () => {
+                // Remove file from selectedFiles
+                selectedFiles = selectedFiles.filter(file => file.name !== fileName);
+
+                // Update file list and count
+                listItem.remove();
+                fileCountSpan.textContent = selectedFiles.length;
+
+                // Save to localStorage
+                localStorage.setItem('uploadedFiles', JSON.stringify(selectedFiles));
+            });
+
+            fileList.appendChild(listItem);
+        }
+
+        // Handle Convert Button click
+        convertButton.addEventListener('click', (event) => {
+            if (selectedFiles.length === 0) {
+                event.preventDefault(); // Prevent form submission
+                responseMessage.textContent = 'Please upload at least one file before converting.';
+                responseMessage.classList.add('text-danger');
+                return;
+            }
+
+            responseMessage.textContent = '';
+            responseMessage.classList.remove('text-danger');
+
+            // Sync selectedFiles to fileUpload.files
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(file => dataTransfer.items.add(file));
+            fileUpload.files = dataTransfer.files;
+        });
+    </script>
+    <script>
+        function scrollToQuestion(button) {
+            var questionId = button.getAttribute("data-id");
+            var questionElement = document.getElementById(questionId);
+            if (questionElement) {
+                questionElement.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
+    <script>
+        function deleteQuestionInReview(index) {
+            if (confirm("Bạn có chắc chắn muốn xóa?")) {
+                window.location.href = "/quizes/review/delete/" + index;
+            }
+        }
+    </script>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var questions = /*[[${session.Questions}]]*/ [];
+        document.getElementById("questionsJson").value = JSON.stringify(questions);
+        console.log("JSON Data:", document.getElementById("questionsJson").value);
+        /*]]>*/
+    </script>
+</div>
+</body>
+
+</html>

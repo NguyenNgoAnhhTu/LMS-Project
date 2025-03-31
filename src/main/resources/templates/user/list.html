@@ -1,0 +1,60 @@
+<!-- base.html -->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments :: common_header(~{::title}, ~{::link})}">
+    <title>Users</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+<!-- Wrapper for the whole page -->
+<div class="d-flex flex-column min-vh-100">
+    <!-- Sticky Header -->
+    <div th:replace="~{fragments :: header}" class="sticky-top"></div> <!-- Header always on top -->
+
+    <!--   Body Content -->
+    <div class="flex-grow-1" th:insert="user/list_body.html :: content"></div> <!-- Page-specific content -->
+
+    <!-- Footer -->
+    <div th:replace="~{fragments :: footer}" class="mt-auto"></div> <!-- Footer stays at the bottom -->
+</div>
+
+<div th:replace="~{fragments :: scripts}" class="mt-auto"></div>
+
+<!--    <script>-->
+<!--        document.getElementById("importButton").addEventListener("click", function () {-->
+<!--        const form = document.getElementById("importForm");-->
+<!--        const formData = new FormData(form);-->
+
+<!--        const alertBox = document.getElementById("import-alert");-->
+<!--        alertBox.style.display = "none"; // Hide any previous alerts-->
+
+<!--        fetch("/users/import", {-->
+<!--        method: "POST",-->
+<!--        body: formData,-->
+<!--    })-->
+<!--        .then(response => {-->
+<!--        if (!response.ok) {-->
+<!--        throw response; // For non-200 responses, throw to catch block-->
+<!--    }-->
+<!--        return response.text();-->
+<!--    })-->
+<!--        .then(message => {-->
+<!--        alertBox.className = "alert alert-success";-->
+<!--        alertBox.innerText = message;-->
+<!--        alertBox.style.display = "block";-->
+<!--        form.reset(); // Reset the form after a successful import-->
+<!--    })-->
+<!--        .catch(async (error) => {-->
+<!--        const errorMessage = await error.text();-->
+<!--        alertBox.className = "alert alert-danger";-->
+<!--        alertBox.innerText = errorMessage;-->
+<!--        alertBox.style.display = "block";-->
+<!--    });-->
+<!--    });-->
+<!--</script>-->
+
+
+</body>
+</html>

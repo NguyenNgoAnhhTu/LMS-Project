@@ -1,0 +1,934 @@
+<!-- Thông báo lỗi -->
+<div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <span th:text="${errorMessage}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<!-- Thông báo thành công -->
+<div th:if="${successMessage}" class="alert alert-primary alert-dismissible fade show" role="alert">
+    <i class="bi bi-info-circle-fill"></i>
+    <span th:text="${successMessage}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<div class="px-5 flex-grow-1">
+    <h1 class="text-center">Quizes</h1>
+    <div>
+        <div>
+            <a th:href="@{/}" class="btn btn-outline-primary btn-sm" style="margin-bottom: 15px;">
+                <i class="bi bi-arrow-left-short"></i> Back
+            </a>
+        </div>
+        <div class="d-flex align-items-center mb-3">
+            <div class="flex-fill">
+                <!-- Search Form -->
+                <form action="/quizes" method="get" class="d-flex gap-2" id="searchForm">
+                    <div class="d-flex gap-2">
+                        <!-- Course Filter -->
+                        <select id="course" name="course" class="form-select" style="width: 200px;">
+                            <option value="">-- Select a Course --</option>
+                            <option
+                                    th:each="course : ${courses}"
+                                    th:value="${course.id}"
+                                    th:text="${course.name}"
+                                    th:selected="${param.course != null and param.course[0] == course.id.toString()}"
+                            >
+                            </option>
+                        </select>
+
+                        <!-- Tag Filter -->
+                        <div class="dropdown" style="width: 200px;">
+                            <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" id="tagFilterButton" data-bs-toggle="dropdown" data-bs-auto-close="false" aria-expanded="false">
+                                <i class="bi bi-tags me-1"></i>
+                                Select Tags
+                            </button>
+                            <ul class="dropdown-menu w-100 p-0">
+                                <!-- Search box for tags -->
+                                <li class="px-3 py-2 border-bottom">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-search"></i>
+                                        </span>
+                                        <input type="text" class="form-control form-control-sm"
+                                               id="searchTags"
+                                               placeholder="Search tags">
+                                    </div>
+                                </li>
+                                <!-- Tags list -->
+                                <div class="tags-scroll px-3 py-2">
+                                    <div id="tagsContainer">
+                                        <div class="form-check mb-2" th:each="tag : ${tags}">
+                                            <input class="form-check-input tag-checkbox"
+                                                   type="checkbox"
+                                                   th:id="'tag-' + ${tag.id}"
+                                                   th:value="${tag.id}"
+                                                   onchange="handleTagChange()"
+                                                   th:checked="${param.tags != null and param.tags.contains(tag.id.toString())}">
+                                            <label class="form-check-label" th:for="'tag-' + ${tag.id}" th:text="${tag.name}"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Footer -->
+                                <li class="px-3 py-2 border-top bg-light d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" onclick="clearAllTags()">
+                                        <i class="me-1"></i>Clear
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-primary flex-fill" onclick="applyTagFilter()">
+                                        <i class="me-1"></i>Apply
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Search Input -->
+                        <input type="text" class="form-control" name="searchQuery" th:value="${searchQuery}"
+                               placeholder="Search by quiz name" aria-label="Search" style="width: 200px;">
+
+                        <!-- Hidden input for tags -->
+                        <input type="hidden" name="tags" id="selectedTags">
+
+
+
+                        <button class="btn btn-outline-secondary" type="submit" onclick="return prepareSearch()">
+                            <i class="bi bi-search"></i>
+                        </button>
+
+                        <!-- Thêm nút Clear All -->
+                        <button id="clearAllFilters" type="button" class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-x-circle me-1"></i> Clear All
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div>
+                <th:block th:unless="${isStudent}">
+                    <a href="/quizes/print" class="btn btn-outline-secondary me-2" target="_blank">
+                        <i class="bi bi-printer"></i> Print
+                    </a>
+                    <a href="quizes/export" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-file-earmark-excel"></i> Export
+                    </a>
+                    <a href="tools" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-repeat"></i> Convert
+                    </a>
+                    <button class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#importModal">
+                        <i class="bi bi-upload"></i> Import
+                    </button>
+                    <a href="/quizes/create" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Create New Quiz
+                    </a>
+                </th:block>
+            </div>
+        </div>
+        <div class="d-flex align-items-center mb-3">
+            <button id="toggleView" class="btn btn-primary btn-sm">
+                <i class="bi bi-table"></i> Switch to Table View
+            </button>
+        </div>
+        <div id="cardView" class="row">
+            <div th:each="quize : ${quizes}" class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${quize.getName()}"></h5>
+                        <p class="card-text text-muted" th:text="${quize.getDescription()}"></p>
+                        <!-- Hiển thị tags -->
+                        <div class="mb-2 tag-container">
+                            <th:block th:if="${not #lists.isEmpty(quize.getTags())}">
+                                <span th:each="tag, tagStat : ${quize.getTags()}" th:if="${tagStat.index < 2}"
+                                      class="badge bg-primary me-1 mb-1" th:text="${tag.name}"></span>
+                                <span th:if="${quize.getTags().size() > 2}" class="badge bg-secondary more-tags me-1 mb-1">
+                                    +<span th:text="${quize.getTags().size() - 2}"></span>
+                                    <div class="tag-tooltip">
+                                        <span th:each="tag, tagStat : ${quize.getTags()}" th:if="${tagStat.index >= 2}"
+                                              class="badge bg-primary me-1 mb-1" th:text="${tag.name}"></span>
+                                    </div>
+                                </span>
+                            </th:block>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><strong>Attempts:</strong> <span th:text="${quize.getAttemptLimit()}"></span></li>
+                            <li class="list-group-item"><strong>Start:</strong> <span th:text="${#temporals.format(quize.getStartTime(), 'dd-MM-yyyy HH:mm:ss')}"></span></li>
+                            <li class="list-group-item"><strong>End:</strong> <span th:text="${#temporals.format(quize.getEndTime(), 'dd-MM-yyyy HH:mm:ss')}"></span></li>
+                            <li class="list-group-item"><strong>Status:</strong> <span th:text="${quize.getQuizType()}"></span></li>
+                        </ul>
+                        <div class="mt-3 d-flex gap-2">
+                            <th:block th:unless="${isStudent}">
+                                <a th:href="@{'/quizes/edit/' + ${quize.getId()}}" class="btn btn-outline-secondary btn-sm" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a th:href="@{'/quizes/detail/' + ${quize.getId()}}" class="btn btn-outline-primary btn-sm" title="Detail">
+                                    <i class="bi bi-info-circle"></i>
+                                </a>
+                                <a th:href="@{'/quizes/delete/' + ${quize.getId()}}" class="btn btn-outline-danger btn-sm"
+                                   onclick="return confirm('Are you sure?')" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </th:block>
+
+                            <!-- Participants button available for all roles -->
+                            <a th:href="@{'/quizes/participants/' + ${quize.getId()}}" class="btn btn-outline-secondary btn-sm" title="Participants">
+                                <i class="bi bi-person-circle"></i>
+                            </a>
+
+                            <!-- Show Apply button only for STUDENT when quiz is OPEN -->
+                            <th:block th:if="${isStudent}">
+                                <form th:action="@{'/quizes/apply/' + ${quize.id}}" method="post"
+                                      th:if="${quize.getQuizType().name() == 'OPEN'}"
+                                      onsubmit="return confirm('Do you want to join this quiz?');"
+                                      class="d-inline-block ms-auto">
+                                    <button type="submit" class="btn btn-outline-primary btn-sm d-flex align-items-center w-100" title="Apply">
+                                        <i class="bi bi-caret-right-fill"></i> Apply
+                                    </button>
+                                </form>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tableView" class="scrollable-table">
+            <table class="table table-bordered">
+                <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                <tr>
+                    <th class="text-center">#</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Tags</th>
+                    <th>Attempt</th>
+                    <th>Time Start</th>
+                    <th>Time End</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="quize, iterStat : ${quizes}">
+                    <td class="text-center" th:text="${iterStat.index + 1}"></td>
+                    <td th:text="${quize.getName()}"></td>
+                    <td th:text="${quize.getDescription()}"></td>
+                    <td>
+                        <div class="tag-container">
+                            <th:block th:if="${not #lists.isEmpty(quize.getTags())}">
+                                <span th:each="tag, tagStat : ${quize.getTags()}" th:if="${tagStat.index < 2}"
+                                      class="badge bg-primary me-1" th:text="${tag.name}"></span>
+                                <span th:if="${quize.getTags().size() > 2}" class="badge bg-secondary more-tags me-1">
+                                    +<span th:text="${quize.getTags().size() - 2}"></span>
+                                    <div class="tag-tooltip">
+                                        <span th:each="tag, tagStat : ${quize.getTags()}" th:if="${tagStat.index >= 2}"
+                                              class="badge bg-primary me-1 mb-1" th:text="${tag.name}"></span>
+                                    </div>
+                                </span>
+                            </th:block>
+                        </div>
+                    </td>
+                    <td th:text="${quize.getAttemptLimit()}"></td>
+                    <td th:text="${#temporals.format(quize.getStartTime(), 'dd-MM-yyyy HH:mm:ss')}"></td>
+                    <td th:text="${#temporals.format(quize.getEndTime(), 'dd-MM-yyyy HH:mm:ss')}"></td>
+                    <td th:text="${quize.getQuizType()}"></td>
+                    <td class="d-flex align-items-center gap-1">
+                        <th:block th:unless="${isStudent}">
+                            <a th:href="@{'/quizes/edit/' + ${quize.getId()}}" class="btn btn-outline-secondary btn-sm" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a th:href="@{'/quizes/detail/' + ${quize.getId()}}" class="btn btn-outline-secondary btn-sm" title="Detail">
+                                <i class="bi bi-info-circle"></i>
+                            </a>
+                            <a th:href="@{'/quizes/delete/' + ${quize.getId()}}" class="btn btn-outline-danger btn-sm"
+                               onclick="return confirm('Are you sure?')" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </th:block>
+
+                        <!-- Participants button available for all roles -->
+                        <a th:href="@{'/quizes/participants/' + ${quize.getId()}}" class="btn btn-outline-secondary btn-sm" title="Participants">
+                            <i class="bi bi-person-circle"></i>
+                        </a>
+
+                        <!-- Show Apply/Closed buttons only for STUDENT -->
+                        <th:block th:if="${isStudent}">
+                            <form th:action="@{'/quizes/apply/' + ${quize.id}}" method="post"
+                                  th:if="${quize.getQuizType().name() == 'OPEN'}"
+                                  onsubmit="return confirm('Do you want to join this quiz?');">
+                                <button type="submit" class="btn btn-outline-primary btn-sm d-flex align-items-center" title="Apply">
+                                    <i class="bi bi-caret-right-fill"></i> Apply
+                                </button>
+                            </form>
+
+                            <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center" title="Closed" disabled
+                                    th:if="${quize.getQuizType().name() == 'CLOSE'}">
+                                <i class="bi bi-caret-right-fill"></i> Closed
+                            </button>
+                        </th:block>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="row justify-content-center">
+            <div class="pagination col-4 justify-content-center pe-0" th:if="${totalPages > 0}">
+                <ul class="pagination">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/quizes(page=${0}, pageSize=${pageSize}, searchQuery=${searchQuery}, course=${param.course}, tags=${param.tags})}"><<</a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/quizes(page=${currentPage - 1}, pageSize=${pageSize}, searchQuery=${searchQuery}, course=${param.course}, tags=${param.tags})}"><</a>
+                    </li>
+
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:classappend="${currentPage == i} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/quizes(page=${i}, pageSize=${pageSize}, searchQuery=${searchQuery}, course=${param.course}, tags=${param.tags})}"
+                           th:text="${i + 1}"></a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/quizes(page=${currentPage + 1}, pageSize=${pageSize}, searchQuery=${searchQuery}, course=${param.course}, tags=${param.tags})}">></a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link"
+                           th:href="@{/quizes(page=${totalPages - 1}, pageSize=${pageSize}, searchQuery=${searchQuery}, course=${param.course}, tags=${param.tags})}">>></a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Only show import modal for non-students -->
+<th:block th:unless="${isStudent}">
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Import Roles from Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Information about the template -->
+                    <!--                    <div class="mb-3">-->
+                    <!--                        <p>Download the Excel template before uploading your file:</p>-->
+                    <!--                        <a href="/templates/roles.xlsx" class="btn btn-link" download>Download Role Template</a>-->
+                    <!--                    </div>-->
+                    <!-- Import form -->
+                    <form method="post" enctype="multipart/form-data" th:action="@{/quizes/modal}">
+                        <div>
+                            <label for="course" class="form-label fw-bold ">Select Course</label>
+                            <select id="course" name="course" class="form-select" onchange="reloadPage()">
+                                <option value="">-- Select a Course --</option>
+                                <option
+                                        th:each="course : ${courses}"
+                                        th:value="${course.name}"
+                                        th:text="${course.name}"
+                                >
+                                </option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="fileType" class="form-label fw-bold ">Select File Type</label>
+                            <select id="fileType" name="fileType" class="form-select" onchange="reloadPage()" required>
+                                <option value="">-- Select file type --</option>
+                                <option
+                                        th:each="fileType : ${fileTypes}"
+                                        th:value="${fileType}"
+                                        th:text="${fileType}"
+                                        th:selected="${fileType==chosenType}"
+                                >
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Choose Excel File</label>
+                            <input type="file" name="file" id="file" class="form-control" required>
+                            <p class="mt-2 text-success" th:if="${chosenFile}">
+                                Chosen file: <span th:text="${chosenFile}"></span>
+                            </p>
+                        </div>
+                        <button type="submit" name="action" value="import" class="btn btn-primary">Import</button>
+                        <button type="submit" name="action" value="review" class="btn btn-primary">Review file</button>
+                    </form>
+                    <div th:if="${error}" class="alert alert-danger">
+                        <p th:text="${error}"></p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+<div class="modal fade" id="confirmImportModal" tabindex="-1" aria-labelledby="confirmImportLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmImportLabel">Confirm Import</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="importMessage">The file contains <strong id="questionCount"></strong> questions. Do you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmImportButton">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let viewMode = localStorage.getItem("viewMode") || "table";
+    updateView(viewMode);
+
+    document.getElementById("toggleView").addEventListener("click", function () {
+        viewMode = (viewMode === "table") ? "card" : "table";
+        localStorage.setItem("viewMode", viewMode);
+        updateView(viewMode);
+    });
+
+    // Cải thiện xử lý sự kiện cho dropdown
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+    const tagFilterButton = document.getElementById('tagFilterButton');
+
+    if (dropdownMenu) {
+        // Ngăn chặn tất cả các sự kiện click trong dropdown menu từ việc đóng dropdown
+        dropdownMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Ngăn chặn các checkbox từ việc đóng dropdown
+        const checkboxes = dropdownMenu.querySelectorAll('.tag-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+    }
+
+    // Cải thiện cách hiển thị dropdown
+    if (tagFilterButton) {
+        const tagDropdown = new bootstrap.Dropdown(tagFilterButton);
+
+        // Đặt click handler cho nút Apply để đóng dropdown sau khi áp dụng
+        document.querySelector('button[onclick="applyTagFilter()"]').addEventListener('click', function() {
+            // Thực hiện applyTagFilter trước
+            applyTagFilter();
+            // Sau đó đóng dropdown
+            tagDropdown.hide();
+        });
+
+        // Đặt click handler cho nút Clear để không đóng dropdown
+        document.querySelector('button[onclick="clearAllTags()"]').addEventListener('click', function(e) {
+            e.stopPropagation();
+            clearAllTags();
+        });
+    }
+
+    // Cải thiện tính năng tìm kiếm tag với debounce
+    const searchInput = document.getElementById('searchTags');
+    if (searchInput) {
+        // Sử dụng debounce để giảm số lượng request
+        let debounceTimer;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            const query = this.value.trim();
+
+            // Hiển thị "Đang tìm kiếm..." nếu query không rỗng
+            if (query.length > 0) {
+                document.getElementById('tagsContainer').innerHTML =
+                    '<div class="text-center py-3"><i class="bi bi-hourglass-split me-2"></i> Loading...</div>';
+            }
+
+            debounceTimer = setTimeout(() => searchTags(query), 300);
+        });
+    }
+
+    // Lưu trữ tất cả các tag để tìm kiếm cục bộ
+    window.allTags = [];
+
+    // Tải tất cả tag ban đầu
+    fetchAllTags();
+
+    // Initialize selected tags text
+    updateSelectedTagsText();
+
+    // Xử lý nút Clear All Filters
+    const clearAllFiltersBtn = document.getElementById('clearAllFilters');
+    if (clearAllFiltersBtn) {
+        clearAllFiltersBtn.addEventListener('click', function() {
+            clearAllFilters();
+        });
+    }
+});
+
+// Lấy tất cả tag từ server và lưu trữ
+function fetchAllTags() {
+    fetch('/quizes/tags', {
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(handleResponse)
+    .then(tags => {
+        window.allTags = Array.isArray(tags) ? tags : [tags];
+        // Không cần render lại, vì trang đã có tags
+    })
+    .catch(error => {
+        console.error('Failed to fetch tags:', error);
+    });
+}
+
+function searchTags() {
+    const query = document.getElementById('searchTags').value.trim();
+    const tagsContainer = document.getElementById('tagsContainer');
+
+    // Show loading state
+    tagsContainer.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+
+    // Fetch tags based on search query
+    fetch(`/quizes/tags/search?name=${encodeURIComponent(query)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(tags => {
+            tagsContainer.innerHTML = '';
+
+            if (!tags || tags.length === 0) {
+                tagsContainer.innerHTML = `
+                <div class="alert alert-info w-100">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No tags found matching "${query}"
+                </div>`;
+                return;
+            }
+
+            // Lưu trữ trạng thái checked của các tag hiện tại
+            const checkedTags = new Set();
+            document.querySelectorAll('.tag-checkbox:checked').forEach(checkbox => {
+                checkedTags.add(checkbox.value);
+            });
+
+            tags.forEach(tag => {
+                if (tag && tag.id) {
+                    const sanitizedName = tag.name
+                        ? tag.name.replace(/[<>]/g, '')
+                        : 'Unnamed Tag';
+
+                    const isChecked = checkedTags.has(tag.id.toString());
+
+                    tagsContainer.innerHTML += `
+                    <div class="form-check mb-2">
+                        <input class="form-check-input tag-checkbox" type="checkbox"
+                               id="tag-${tag.id}" name="tagIds" value="${tag.id}"
+                               onchange="handleTagChange()"
+                               ${isChecked ? 'checked' : ''}>
+                        <label class="form-check-label" for="tag-${tag.id}">
+                            ${sanitizedName}
+                        </label>
+                    </div>`;
+                }
+            });
+            updateSelectedTagsText();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            tagsContainer.innerHTML = `
+            <div class="alert alert-danger w-100">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Unable to load tags. Please try refreshing the page.
+            </div>`;
+        });
+}
+
+function handleResponse(response) {
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+}
+
+function handleTagChange() {
+    updateSelectedTagsText();
+}
+
+function applyTagFilter() {
+    // Lấy tất cả tag đã chọn
+    const selectedTags = document.querySelectorAll('.tag-checkbox:checked');
+    const selectedTagIds = Array.from(selectedTags).map(checkbox => checkbox.value);
+
+    // Xóa tất cả các input hidden cũ của tags nếu có
+    document.querySelectorAll('input[name="tags"]').forEach(input => {
+        input.remove();
+    });
+
+    // Tạo một input hidden mới cho mỗi tag ID đã chọn
+    const searchForm = document.getElementById('searchForm');
+    selectedTagIds.forEach(tagId => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'tags';
+        input.value = tagId;
+        searchForm.appendChild(input);
+    });
+
+    // Submit form
+    searchForm.submit();
+}
+
+function clearAllTags() {
+    document.querySelectorAll('.tag-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateSelectedTagsText();
+    document.getElementById('selectedTags').value = '';
+}
+
+function prepareSearch() {
+    // Đảm bảo giá trị tags được cập nhật trước khi submit
+    const selectedTags = document.querySelectorAll('.tag-checkbox:checked');
+    const selectedTagIds = Array.from(selectedTags).map(checkbox => checkbox.value);
+
+    // Xóa tất cả các input hidden cũ của tags nếu có
+    document.querySelectorAll('input[name="tags"]').forEach(input => {
+        input.remove();
+    });
+
+    // Tạo một input hidden mới cho mỗi tag ID đã chọn
+    const searchForm = document.getElementById('searchForm');
+    selectedTagIds.forEach(tagId => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'tags';
+        input.value = tagId;
+        searchForm.appendChild(input);
+    });
+
+    return true;
+}
+
+function updateSelectedTagsText() {
+    const button = document.getElementById('tagFilterButton');
+    const selectedTags = document.querySelectorAll('.tag-checkbox:checked');
+    const selectedCount = selectedTags.length;
+
+    if (selectedCount === 0) {
+        button.innerHTML = '<i class="bi bi-tags me-1"></i>Select Tags';
+    } else {
+        button.innerHTML = `<i class="bi bi-tags-fill me-1"></i>${selectedCount} selected`;
+    }
+}
+
+function updateView(mode) {
+    let toggleButton = document.getElementById("toggleView");
+    if (mode === "table") {
+        document.getElementById("tableView").style.display = "block";
+        document.getElementById("cardView").style.display = "none";
+        toggleButton.innerHTML = '<i class="bi bi-grid"></i> Switch to Card View';
+        toggleButton.classList.replace("btn-primary", "btn-secondary");
+    } else {
+        document.getElementById("tableView").style.display = "none";
+        document.getElementById("cardView").style.display = "flex";
+        toggleButton.innerHTML = '<i class="bi bi-table"></i> Switch to Table View';
+        toggleButton.classList.replace("btn-secondary", "btn-primary");
+    }
+}
+
+function clearAllFilters() {
+    // Xóa các giá trị trong form
+    document.getElementById('course').value = '';
+    document.getElementById('searchTags').value = '';
+    document.getElementById('selectedTags').value = '';
+
+    // Bỏ chọn tất cả các checkbox tag
+    document.querySelectorAll('.tag-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+
+    // Cập nhật hiển thị text của button tag filter
+    updateSelectedTagsText();
+
+    // Xóa giá trị trong ô search
+    const searchInput = document.querySelector('input[name="searchQuery"]');
+    if (searchInput) {
+        searchInput.value = '';
+    }
+
+    // Submit form để reset lại trang với các giá trị đã xóa
+    document.getElementById('searchForm').submit();
+}
+</script>
+
+<style>
+/* Xóa max-height và overflow-y cho dropdown-menu */
+.dropdown-menu {
+    padding: 0;
+    /* Xóa max-height và overflow-y ở đây */
+}
+
+/* Giữ nguyên scroll cho phần danh sách tag */
+.tags-scroll {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* Thêm style để đảm bảo dropdown menu hiển thị đúng */
+.dropdown {
+    position: relative;
+    z-index: 1000;
+}
+
+.dropdown-menu .form-check {
+    padding: 8px 16px;
+    margin: 0;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+}
+
+.dropdown-menu .form-check:hover {
+    background-color: rgba(0,0,0,0.05);
+}
+
+.dropdown-toggle::after {
+    float: right;
+    margin-top: 8px;
+}
+
+.tags-scroll .form-check {
+    padding: 8px 12px;
+    margin: 0;
+    display: block;
+    width: 100%;
+}
+
+.tags-scroll .form-check:last-child {
+    border-bottom: none;
+}
+
+.tags-scroll .form-check-input {
+    cursor: pointer;
+}
+
+.tags-scroll .form-check-label {
+    cursor: pointer;
+    width: 100%;
+    display: inline-block;
+    padding-left: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#tagsContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make checkboxes more visible */
+.form-check-input {
+    width: 18px;
+    height: 18px;
+}
+
+.dropdown-menu input[type="text"] {
+    border-radius: 4px;
+}
+
+.dropdown-menu .btn-sm {
+    padding: 0.25rem 0.75rem;
+}
+
+/* Cải thiện kiểu dáng cho các tag checkbox */
+.form-check-input + .form-check-label {
+    transition: all 0.2s ease;
+}
+
+.form-check-input:checked + .form-check-label {
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+/* Cải thiện trạng thái hover */
+.tags-scroll .form-check:hover {
+    background-color: rgba(13, 110, 253, 0.08);
+}
+
+/* Style cho tag đã chọn */
+.tag-selected {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+/* Style cho thanh tìm kiếm */
+#searchTags:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    border-color: #86b7fe;
+}
+
+/* Thêm hiệu ứng hover rõ ràng hơn */
+.tags-scroll .form-check:hover {
+    background-color: rgba(13, 110, 253, 0.08);
+    transition: background-color 0.2s ease;
+}
+
+/* Style cho tag badges */
+.badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    border-radius: 0.25rem;
+    display: inline-block;
+    transition: all 0.2s ease;
+}
+
+.badge.bg-primary {
+    background-color: #0d6efd !important;
+}
+
+.badge:hover {
+    opacity: 0.9;
+}
+
+/* Style cho tags trong cards */
+.card .badge {
+    cursor: default;
+}
+
+/* Style cho tags trong table */
+table .badge {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+/* Style cho hiển thị tag giới hạn */
+.tag-container {
+    position: relative;
+    display: block;
+    width: 100%;
+    overflow: visible;
+}
+
+.more-tags {
+    cursor: pointer;
+    position: relative;
+}
+
+.tag-tooltip {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    z-index: 9999;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    min-width: 150px;
+    left: 0;
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 5px;
+    transform: none;
+}
+
+.tag-tooltip:after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #fff transparent transparent transparent;
+}
+
+.more-tags:hover .tag-tooltip {
+    display: block;
+}
+
+/* Đảm bảo các badge trong tooltip hiển thị đúng */
+.tag-tooltip .badge {
+    display: inline-block;
+    margin: 2px;
+}
+
+/* Style cho badge trong table */
+table .tag-container .more-tags {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+table .tag-container .more-tags .tag-tooltip {
+    bottom: 130%;
+    left: auto;
+    right: 0;
+    transform: none;
+}
+
+/* Tăng khoảng trống cho tooltip trong table để hiển thị tốt hơn */
+table td {
+    position: relative;
+    overflow: visible;
+}
+
+/* Đảm bảo tooltip nổi lên trên tất cả các phần tử */
+thead.table-light {
+    z-index: 5;
+}
+
+.more-tags {
+    position: relative;
+    z-index: 10000;
+}
+
+/* Thêm màu nền đậm hơn cho tooltip để dễ nhìn */
+.tag-tooltip {
+    background-color: #ffffff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Khi hover vào phần "more tags", tăng z-index lên cao nhất */
+.more-tags:hover {
+    z-index: 10000;
+}
+
+/* Fix tooltip position trong card view */
+.card .tag-container .more-tags .tag-tooltip {
+    bottom: 130%;
+    left: 0;
+    right: auto;
+}
+
+/* Style cho nút Clear All */
+#clearAllFilters {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#clearAllFilters:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+#clearAllFilters i {
+    font-size: 0.9rem;
+}
+</style>

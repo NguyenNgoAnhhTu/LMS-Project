@@ -1,0 +1,58 @@
+<div class="container-fluid px-5">
+    <div class="m-3">
+        <a th:href="@{/quizes}" class="btn btn-outline-primary btn-sm position-absolute">
+            <i class="bi bi-arrow-left-short"></i> Back
+        </a>
+        <h1 class="text-center">Question</h1>
+    </div>
+    <div class="row d-flex my-5">
+        <!-- Main Content (Left) -->
+        <div id="question-container" class="col-9 ms-sm-auto d-flex flex-column main-content border rounded p-3">
+            <!-- Loop through questions -->
+            <div th:each="question, iterStat : ${questions}" class="card mb-4 shadow-sm"
+                 th:id="'question_' + ${question.id}">
+                <div class="card-body">
+                    <h5><strong th:text="'Question ' + ${iterStat.index + 1}"></strong></h5>
+                    <pre class="p-3 border rounded" style="background-color: #F0F0F0"
+                         th:utext="${question.questionText}"></pre>
+
+                    <!-- Answer Options -->
+                    <ul class="list-group mt-3">
+                        <li th:each="option : ${question.answerOptions}" th:class="${option.isCorrect} ? 'list-group-item' : 'list-group-item correct'" class="list-group-item">
+                            <label>
+                                <span th:text="${option.optionText}"></span>
+                            </label>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- Sidebar (Right) -->
+        <div class="col-3 ms-sm-auto px-2 d-flex flex-column main-content">
+            <div class="card-footer" th:if="${questions != null and not #lists.isEmpty(questions)}">
+                <div class="row text-center">
+                    <div th:each="question, iterStat : ${questions}" class="col-3 col-md-3 col-xl-2 mb-2">
+                        <button type="button" class="btn btn-outline-primary" style="min-width: 40px"
+                                th:attr="onclick='document.getElementById(\'question_' + ${question.id} + '\').scrollIntoView({behavior: \'smooth\'})'">
+                            <span th:text="${iterStat.count}"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+</script>
+<style>
+    #question-container {
+        height: 60vh;
+        overflow-y: auto;
+    }
+
+    .correct {
+        background-color: #d9f7d9;
+        color: #1cbba9;
+    }
+</style>

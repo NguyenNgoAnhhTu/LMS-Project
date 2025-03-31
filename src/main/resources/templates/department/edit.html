@@ -1,0 +1,75 @@
+
+
+<div class="px-5 flex-grow-1">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Edit Department</h3>
+        </div>
+        <div class="card-body">
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <form th:action="@{/departments/edit/{id}(id=${department.id})}" method="post" class="needs-validation" novalidate>
+                <!-- Course Name Field -->
+                <div class="mb-3">
+                    <label for="name" class="form-label">Department Name</label>
+                    <input type="text" id="name" th:field="*{department.name}" class="form-control" placeholder="Enter department name" required autofocus>
+                    <div class="invalid-feedback">
+                        Department name is required.
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="location" class="form-label">Location</label>
+                    <select id="location" th:field="*{department.location}" class="form-select" required>
+                        <option value="" disabled>--Select a Location--</option>
+                        <option th:each="location : ${locations}"
+                                th:value="${location.id}"
+                                th:text="${location.name}"
+                                th:selected="*{department.location} == ${location.id}"></option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Location is required.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="user" class="form-label">User</label>
+                    <select id="user" th:field="*{department.users}" class="form-select" multiple required title="Choose users...">
+                        <option th:each="user : ${users}"
+                                th:value="${user.id}"
+                                th:text="${user.username}"
+                                th:selected="${department.users != null and #lists.contains(department.users, user.id)}"
+                        ></option>
+                    </select>
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple users</div>
+                    <div class="invalid-feedback">
+                        Please select at least one user for the department
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="course" class="form-label">Course</label>
+                    <select id="course" th:field="*{department.courses}" class="form-select" multiple required title="Choose courses...">
+                        <option th:each="course : ${courses}"
+                                th:value="${course.id}"
+                                th:text="${course.name}"
+                                th:selected="${department.courses != null and #lists.contains(department.courses, course.id)}"
+                        ></option>
+                    </select>
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple courses</div>
+                    <div class="invalid-feedback">
+                        Please select at least one course for the department
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="/departments" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+

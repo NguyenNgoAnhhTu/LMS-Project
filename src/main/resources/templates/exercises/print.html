@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise List</title>
+    <link rel="stylesheet" href="/css/print.css">
+</head>
+<body>
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Exercise List</h1>
+    <table class="table table-bordered table-striped">
+        <thead class="table-light">
+        <tr>
+            <th class="text-center">#</th>
+            <th>Exercise</th>
+            <th>Language</th>
+            <th>Level</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Loop through exercises and display them -->
+        <tr th:each="exercise, iterStat : ${exercises}">
+            <td class="text-center" th:text="${iterStat.index + 1}"></td> <!-- Start numbering from 1 -->
+            <td th:text="${exercise.name}"></td>
+            <!-- Display programming language -->
+            <td th:text="${exercise.language.language}"></td>
+            <!-- Display exercise level -->
+            <td th:text="${exercise.level}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Automatically trigger the browser's print dialog
+    window.onload = function () {
+        window.print();
+    };
+</script>
+</body>
+</html>

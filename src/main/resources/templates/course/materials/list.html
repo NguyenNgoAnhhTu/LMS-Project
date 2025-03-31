@@ -1,0 +1,118 @@
+<div id="materials-container">
+
+    <!-- Section Navigation -->
+    <div class="sub-navbar bg-primary text-white p-3 rounded mb-3 d-flex align-items-center position-relative mt-2">
+        <!-- Scroll Left Button -->
+        <button id="scroll-left" type="button" class="btn btn-light rounded-circle me-2" aria-label="Scroll left">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <!-- Section Buttons Container -->
+        <div class="d-flex overflow-auto flex-grow-1 px-2" id="section-buttons-container">
+            <!-- Loop through sections using Thymeleaf -->
+            <form th:action="@{/sections/select}" method="post" class="d-flex">
+                <div th:each="section : ${sections}" class="mx-1">
+                    <button type="button" class="btn btn-outline-light text-white shadow-sm rounded-pill px-3 py-2"
+                            onclick="loadMaterialsForSection([[${section.id}]])">
+                        <span th:text="${section.name}">Section Name</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Scroll Right Button -->
+        <button id="scroll-right" type="button" class="btn btn-light rounded-circle ms-2" aria-label="Scroll right">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Materials Container to Load Materials Dynamically -->
+    <div id="materials-content" class="mt-3">
+        <!-- Materials will be loaded here dynamically -->
+    </div>
+
+    <!-- Pagination Controls -->
+    <div id="pagination-controls" class="mt-3 text-center">
+        <!-- Pagination will be added dynamically -->
+    </div>
+
+</div>
+
+<script>
+    // Function to Load Materials for the Selected Section
+    function loadMaterialsForSection(sectionId) {
+        alert(2333);
+            // Get the materials container
+            const materialsContainer = document.getElementById("materials-content");
+            const paginationControls = document.getElementById("pagination-controls");
+
+            // Show a loading message while fetching materials
+            materialsContainer.innerHTML = "<p>Loading materials...</p>";
+
+            // Make AJAX request to fetch materials for the selected section
+            fetch(`/materials/${sectionId}/list`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Failed to load materials.");
+                    }
+                    return response.json(); // Assuming the server returns materials as JSON
+                })
+                .then(data => {
+                    // Clear the materials container
+                    materialsContainer.innerHTML = "";
+
+                    // Check if materials exist
+                    if (data.content.length > 0) {
+                        const materialsList = document.createElement("ul");
+
+                        // Loop through the materials and create a list
+                        data.content.forEach(material => {
+                            const listItem = document.createElement("li");
+                            listItem.textContent = material.title; // Adjust based on your material structure
+                            materialsList.appendChild(listItem);
+                        });
+
+                        // Append the materials list to the container
+                        materialsContainer.appendChild(materialsList);
+
+                        // Update pagination controls
+                        updatePaginationControls(page, data.totalPages);
+                    } else {
+                        materialsContainer.innerHTML = "<p>No materials found for this section.</p>";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error loading materials:", error);
+                    materialsContainer.innerHTML = "<p>Error loading materials. Please try again later.</p>";
+                });
+        }
+
+        // Function to Update Pagination Controls
+        function updatePaginationControls(currentPage, totalPages) {
+            const paginationControls = document.getElementById("pagination-controls");
+
+            // Clear previous pagination controls
+            paginationControls.innerHTML = "";
+
+            // If there are multiple pages, add pagination controls
+            if (totalPages > 1) {
+                // Previous button
+                const prevButton = document.createElement("button");
+                prevButton.classList.add("btn", "btn-outline-primary", "me-2");
+                prevButton.textContent = "Previous";
+                prevButton.disabled = currentPage === 0;
+                prevButton.onclick = () => loadMaterialsForSection(currentPage - 1);
+
+                // Next button
+                const nextButton = document.createElement("button");
+                nextButton.classList.add("btn", "btn-outline-primary");
+                nextButton.textContent = "Next";
+                nextButton.disabled = currentPage === totalPages - 1;
+                nextButton.onclick = () => loadMaterialsForSection(currentPage + 1);
+
+                // Append buttons to pagination container
+                paginationControls.appendChild(prevButton);
+                paginationControls.appendChild(nextButton);
+            }
+        }
+</script>

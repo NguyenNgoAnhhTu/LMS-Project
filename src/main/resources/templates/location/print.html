@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locations</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+<h1>Location List</h1>
+<table>
+    <thead>
+    <tr>
+        <th>#</th>
+        <th>Location Name</th>
+        <th>Location Address</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Loop through locations and display them -->
+    <tr th:each="location, iterStat : ${locations}">
+        <td class="text-center" th:text="${iterStat.index + 1}"></td> <!-- Start numbering from 1 -->
+        <td th:text="${location.name}"></td>
+        <td th:text="${location.address}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<script>
+    // Automatically trigger the browser's print dialog
+    window.onload = function() {
+        window.print();
+    };
+</script>
+</body>
+</html>

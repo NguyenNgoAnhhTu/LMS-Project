@@ -1,0 +1,33 @@
+<!-- Body Content -->
+<div class="flex-grow-1 container mt-5" th:fragment="content">
+    <!-- Card for Form -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">Create Module Group</h3>
+        </div>
+        <div class="card-body">
+            <!-- Display success or error message -->
+            <div th:if="${error}" class="alert alert-danger">
+                <span th:text="${error}"></span>
+            </div>
+            <form th:action="@{/module-groups/create}" th:object="${moduleGroup}" method="post" class="needs-validation"
+                  novalidate>
+                <!-- Module Group Name Field -->
+                <div class="mb-3">
+                    <label for="moduleGroupName" class="form-label">Module Group Name</label>
+                    <input type="text" id="moduleGroupName" th:field="*{name}" class="form-control"
+                           placeholder="Enter module group name" required autofocus >
+                    <div class="invalid-feedback">
+                        Module Group name is required.
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="#" th:href="@{/module-groups}" class="btn btn-secondary ms-2">Back to List</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

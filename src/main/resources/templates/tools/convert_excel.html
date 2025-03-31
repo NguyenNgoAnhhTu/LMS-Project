@@ -1,0 +1,182 @@
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .drop-zone {
+            border: 2px dashed #007bff;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background-color: #E5EEFA;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .drop-zone:hover {
+            background-color: #D2E2F6;
+        }
+
+    </style>
+
+
+<div class="d-flex flex-column min-vh-100">
+
+    <!-- Main Content -->
+    <div class="container mt-5 flex-grow-1">
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active text-primary" href="/tools">Excel to JSON</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="/tools/convert_txt">TXT to JSON</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="/tools/generate_exam">Generate Exam</a>
+            </li>
+        </ul>
+
+        <!-- Content Section -->
+        <div class="m-3">
+            <a th:href="@{/quizes}" class="btn btn-outline-primary btn-sm position-absolute mt-3">
+                <i class="bi bi-arrow-left-short"></i> Back
+            </a>
+        </div>
+        <div class="mt-5 text-center">
+            <h1 class="">Convert Excel to JSON</h1>
+            <p class="text-muted">Upload an Excel file and convert it to JSON format.</p>
+
+            <!-- Form for Uploading Excel File -->
+            <form method="POST" enctype="multipart/form-data" th:action="@{/tools/upload_excel}">
+                <div class="drop-zone my-5" id="dropZone">
+                    <p class="text-muted mb-2"><i class="bi bi-upload" style="font-size: 2rem;"></i></p>
+                    <label for="fileUpload" class="btn btn-primary"> <i class="bi bi-folder"></i> Browse Files</label>
+                    <input type="file" name="excelFile" class="form-control d-none" id="fileUpload" required="" multiple="">
+                </div>
+                <p class="mt-2 text-muted">You have uploaded <span id="fileCount" class="fw-bold">0</span> files.</p>
+                <ul id="fileList" class="list-group"></ul>
+
+                <!-- Button Group -->
+                <div class="d-flex gap-2 justify-content-center mt-3">
+                    <button type="submit" class="btn btn-primary">Convert to JSON</button>
+                    <a href="instruction.pdf" class="btn btn-primary" download=""><i class="bi bi-download"></i> Download Material</a>
+                </div>
+            </form>
+            <div id="responseMessage" class="text-center mt-3"></div>
+        </div>
+    </div>
+
+</div>
+
+<!--<script>
+    $(document).ready(function () {
+        $("#fileUpload").change(function () {
+            let fileCount = this.files.length;
+            $("#fileCount").text(fileCount);
+            let fileList = "";
+            for (let i = 0; i < fileCount; i++) {
+                fileList += `<li class="list-group-item">${this.files[i].name}</li>`;
+            }
+            $("#fileList").html(fileList);
+        });
+
+        $("form").submit(function (event) {
+            event.preventDefault();
+            $("#responseMessage").html("<div class='alert alert-info'>Processing...</div>");
+            setTimeout(() => {
+                $("#responseMessage").html("<div class='alert alert-success'>File successfully converted!</div>");
+            }, 2000);
+        });
+    });
+</script>-->
+    <!--<script>
+        // Variables
+        const fileUpload = document.querySelector('#fileUpload');
+        const fileCountSpan = document.querySelector('#fileCount');
+        const fileList = document.querySelector('#fileList');
+        const convertButton = document.querySelector('.btn-convert');
+        const responseMessage = document.querySelector('#responseMessage');
+        let selectedFiles = []; // Array to store selected files
+
+        // Restore previous file list from localStorage
+        if (localStorage.getItem('uploadedFiles')) {
+            selectedFiles = JSON.parse(localStorage.getItem('uploadedFiles'));
+            selectedFiles.forEach(file => addFileToList(file.name));
+            fileCountSpan.textContent = selectedFiles.length;
+        }
+
+        // Clear localStorage when page reloads
+        window.addEventListener('beforeunload', () => localStorage.removeItem('uploadedFiles'));
+
+        // Handle Browse Files button click
+        document.querySelector('.btn-browse').addEventListener('click', (event) => {
+            event.preventDefault();
+            fileUpload.click();
+        });
+
+        // Handle file input change
+        fileUpload.addEventListener('change', function () {
+            const newFiles = Array.from(fileUpload.files).filter(file =>
+                !selectedFiles.some(selected => selected.name === file.name && selected.lastModified === file.lastModified)
+            );
+
+            selectedFiles = [...selectedFiles, ...newFiles];
+
+            // Update the file list and count
+            newFiles.forEach(file => addFileToList(file.name));
+            fileCountSpan.textContent = selectedFiles.length;
+
+            // Save to localStorage
+            localStorage.setItem('uploadedFiles', JSON.stringify(selectedFiles));
+        });
+
+        // Add file to the list DOM
+        function addFileToList(fileName) {
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+
+            // File details
+            listItem.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-file-earmark-excel file-icon"></i>
+                    <span>${fileName}</span>
+                </div>
+                <span class="remove-file">✕</span>
+            `;
+
+            // Add remove event
+            listItem.querySelector('.remove-file').addEventListener('click', () => {
+                // Remove file from selectedFiles
+                selectedFiles = selectedFiles.filter(file => file.name !== fileName);
+
+                // Update file list and count
+                listItem.remove();
+                fileCountSpan.textContent = selectedFiles.length;
+
+                // Save to localStorage
+                localStorage.setItem('uploadedFiles', JSON.stringify(selectedFiles));
+            });
+
+            fileList.appendChild(listItem);
+        }
+
+        // Handle Convert Button click
+        convertButton.addEventListener('click', (event) => {
+            if (selectedFiles.length === 0) {
+                event.preventDefault(); // Prevent form submission
+                responseMessage.textContent = 'Please upload at least one file before converting.';
+                responseMessage.classList.add('text-danger');
+                return;
+            }
+
+            responseMessage.textContent = '';
+            responseMessage.classList.remove('text-danger');
+
+            // Sync selectedFiles to fileUpload.files
+            const dataTransfer = new DataTransfer();
+            selectedFiles.forEach(file => dataTransfer.items.add(file));
+            fileUpload.files = dataTransfer.files;
+        });
+    </script>-->
+
+

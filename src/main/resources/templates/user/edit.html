@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: common_header(~{::title}, ~{::link})}">
+    <title>Edit User</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h2 class="text-center">Edit User</h2>
+
+    <!-- Display error message if any -->
+    <div th:if="${error}" class="alert alert-danger">
+        <p th:text="${error}"></p>
+    </div>
+
+    <!-- Form to edit the user -->
+    <form th:action="@{/users/edit/{id}(id=${user.id})}" method="post">
+        <!-- Username Field -->
+        <div class="form-group mb-3">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" class="form-control" th:value="${user.username}" required autofocus>
+        </div>
+
+        <!-- First Name Field -->
+        <div class="form-group mb-3">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" name="firstName" class="form-control" th:value="${user.firstName}" required>
+        </div>
+
+        <!-- Last Name Field -->
+        <div class="form-group mb-3">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" name="lastName" class="form-control" th:value="${user.lastName}" required>
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group mb-3">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" class="form-control" th:value="${user.email}" required>
+        </div>
+
+        <!-- Password Field (optional to update) -->
+        <div class="form-group mb-3">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-control" placeholder="Leave blank to keep current password">
+        </div>
+
+<!--        &lt;!&ndash; Confirm Password Field (optional to update) &ndash;&gt;-->
+<!--        <div class="form-group mb-3">-->
+<!--            <label for="confirmPassword">Confirm Password</label>-->
+<!--            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Confirm new password">-->
+<!--        </div>-->
+
+        <!-- 2FA Enabled Field -->
+        <div class="form-group mb-3">
+            <label for="is2faEnabled">Enable 2FA</label>
+            <input type="checkbox" id="is2faEnabled" name="is2faEnabled" th:checked="${user.is2faEnabled}" class="form-check-input">
+        </div>
+
+        <!-- Locked Status Field -->
+        <div class="form-group mb-3">
+            <label for="isLocked">Lock User</label>
+            <input type="checkbox" id="isLocked" name="isLocked" th:checked="${user.isLocked}" class="form-check-input">
+        </div>
+
+        <!-- Roles Field -->
+        <div class="form-group mb-3">
+            <label for="roles">Roles</label>
+            <select id="roles" name="roles" class="form-control" required>
+                <option th:each="role : ${allRoles}" th:value="${role.id}" th:text="${role.name}"
+                        th:selected="${user.roles.contains(role)}"></option>
+            </select>
+        </div>
+
+        <!-- Buttons to save or cancel -->
+        <div class="d-flex justify-content-center mt-3">
+            <button type="submit" class="btn btn-success me-2" id="defaultButton">Save Changes</button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='/users'">Cancel</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

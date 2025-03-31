@@ -1,0 +1,135 @@
+<!-- Content Section -->
+<div class="px-5" th:fragment="content">
+    <h1 class="text-center">Tags</h1>
+    <!-- Display error message if it exists -->
+    <div th:if="${error}" th:text="${error}" class="message error-message"></div>
+
+    <!-- Display success message if it exists -->
+    <div th:if="${success}" th:text="${success}" class="message success-message"></div>
+
+    <!-- Import/Export buttons -->
+    <div class="d-flex align-items-center mb-3">
+        <div class="flex-fill">
+            <!-- Search Form -->
+            <form action="/tags" method="get" class="d-flex w-50">
+                <!-- Correctly bind the searchQuery model attribute using Thymeleaf -->
+                <input type="text" class="form-control me-2" name="searchQuery" th:value="${searchQuery}" placeholder="Search by tag name" aria-label="Search">
+                <button class="btn btn-outline-secondary me-2" type="submit">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
+        </div>
+        <div>
+            <!-- Export Button -->
+            <a href="/tags/export" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-file-earmark-excel"></i> Export
+            </a>
+
+            <!-- Import Button that triggers modal -->
+            <button class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#importModal">
+                <i class="bi bi-upload"></i> Import
+            </button>
+
+            <!-- Add New Tag Button -->
+            <a href="/tags/create" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add New Tag
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Displaying tags -->
+    <div class="scrollable-table">
+        <table class="table table-bordered">
+            <thead style="position: sticky; top: 0; z-index: 1;">
+            <tr>
+                <th class="text-center" >#</th>
+                <th>Tag Name</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="tag, iterStat : ${tagsPage.content}">
+                <!-- Adjust index based on current page and page size -->
+                <td class="text-center" th:text="${iterStat.index + 1}"></td> <!-- Start from 1 -->
+                <td th:text="${tag.tagName}"></td>
+                <td>
+                    <a href="#" th:href="@{/tags/edit/{id}(id=${tag.tagId})}"
+                       class="btn btn-outline-secondary btn-sm" title="Edit">
+                        <i class="bi bi-pencil text-secondary"></i>
+                    </a>
+
+                    <!-- Delete Button with icon -->
+                    <a th:href="@{/tags/delete/{id}(id=${tag.tagId})}" title="Delete" class="btn btn-outline-secondary btn-sm"
+                       onclick="return confirm('Are you sure you want to delete this tag?')">
+                        <i class="bi bi-trash"></i>
+                    </a>
+
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Pagination controls -->
+        <div class="d-flex justify-content-center">
+            <ul class="pagination">
+                <!-- Show "No Data" when there are no elements -->
+                <li class="page-item disabled" th:if="${tagsPage.totalElements == 0}">
+                    <span class="page-link">No Data</span>
+                </li>
+
+                <!-- Show pagination controls only if there are elements -->
+                <th:block th:if="${tagsPage.totalElements > 0}">
+                    <!-- First Page -->
+                    <li class="page-item" th:if="${tagsPage.number > 0}">
+                        <a class="page-link" th:href="@{'?page=0'}">First</a>
+                    </li>
+
+                    <!-- Previous Page -->
+                    <li class="page-item" th:if="${tagsPage.number > 0}">
+                        <a class="page-link" th:href="@{'?page=' + ${tagsPage.number - 1}}">Previous</a>
+                    </li>
+
+                    <!-- Loop through and display page numbers -->
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, tagsPage.totalPages - 1)}"
+                        th:classappend="${i == tagsPage.number} ? ' active' : ''">
+                        <a class="page-link" th:href="@{'?page=' + ${i}}"
+                           th:text="${i + 1}">1</a> <!-- Display page numbers (1-indexed) -->
+                    </li>
+
+                    <!-- Next Page -->
+                    <li class="page-item" th:if="${tagsPage.number < tagsPage.totalPages - 1}">
+                        <a class="page-link" th:href="@{'?page=' + ${tagsPage.number + 1}}">Next</a>
+                    </li>
+
+                    <!-- Last Page -->
+                    <li class="page-item" th:if="${tagsPage.number < tagsPage.totalPages - 1}">
+                        <a class="page-link" th:href="@{'?page=' + ${tagsPage.totalPages - 1}}">Last</a>
+                    </li>
+                </th:block>
+            </ul>
+        </div>
+
+        <!-- Modal for Import -->
+        <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="importModalLabel">Import Tags from Excel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Import form -->
+                        <form method="post" enctype="multipart/form-data" action="/tags/import">
+                            <div class="mb-3">
+                                <label for="file" class="form-label">Choose Excel File</label>
+                                <input type="file" name="file" id="file" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Import</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

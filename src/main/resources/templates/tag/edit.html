@@ -1,0 +1,36 @@
+<div class="container mt-5">
+    <h2 class="text-center">Edit Tag</h2>
+
+    <!-- Display error message if any -->
+    <div th:if="${error}" class="alert alert-danger">
+        <p th:text="${error}"></p>
+    </div>
+
+    <!-- Form to edit the tag -->
+    <form th:object="${tag}" th:action="@{/tags/edit/{id}(id=${tag.tagId})}" method="post">
+        <!-- Tag Name -->
+        <div class="form-group">
+            <label for="tagName">Tag Name</label>
+            <input type="text" id="tagName" name="tagName" class="form-control" th:field="*{tagName}" required autofocus>
+        </div>
+
+        <!-- Topic Dropdown -->
+        <div class="mb-3">
+            <label for="courseTopic" class="form-label">Course Topic</label>
+            <select id="courseTopic" th:field="*{topic}" class="form-select" required>
+                <option value="" selected>Select Topic</option>
+                <option th:each="topic : ${topics}"
+                        th:value="${topic.topicId}"
+                        th:text="${topic.topicName}"
+                        th:selected="${topic.topicId == tag.topic.topicId}">
+                </option>
+            </select>
+            <div class="invalid-feedback">Topic is required.</div>
+        </div>
+        <!-- Save and Cancel Buttons -->
+        <div class="d-flex justify-content-center mt-3">
+            <button type="submit" class="btn btn-primary me-2">Save Changes</button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='/tags'">Cancel</button>
+        </div>
+    </form>
+</div>

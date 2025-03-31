@@ -1,0 +1,38 @@
+
+<div>
+    <h1 class="report-title">Assessment Report</h1>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th class="text-center">#</th>
+            <th>Course</th>
+            <th>Title</th>
+            <th>Assessment Type</th>
+            <th>Invited Count</th>
+            <th>Assessed Count</th>
+            <th>Qualified Count</th>
+            <th>Qualifying Score</th>
+            <th>Created At</th>
+            <th>Created By</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="assessment, stat : ${assessments}">
+            <td class="text-center" th:text="${stat.index + 1}"></td>
+            <td th:text="${assessment.course.name}"></td>
+            <td th:text="${assessment.title}"></td>
+            <td th:text="${assessment.assessmentType.name}"></td>
+            <td th:text="${assessment.invitedCount}"></td>
+            <td th:text="${assessment.assessedCount}"></td>
+            <td th:text="${assessment.qualifiedCount}"></td>
+            <td th:text="${assessment.qualifyScore}"></td>
+            <td th:text="${#temporals.format(assessment.createdAt, 'yyyy-MM-dd')}"></td>
+            <td th:text="${assessment.createdBy.username}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-end">
+        <a href="#" th:href="@{/reports}" class="btn btn-secondary ms-2">Back to Reports</a>
+    </div>
+</div>
